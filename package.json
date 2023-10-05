@@ -1,12 +1,12 @@
 {
-  "name": "simple-ts-logging",
+  "name": "@incta/simple-log-ts",
   "version": "0.0.1",
-  "description": "",
-  "main": "index.js",
+  "description": "support for loglevels and correlation_id",
+  "main": "log.js",
   "scripts": {
     "test": "jest"
   },
-  "keywords": [],
+  "keywords": ["log", "logging", "typescript", "correlation"],
   "author": "",
   "license": "MIT",
   "devDependencies": {

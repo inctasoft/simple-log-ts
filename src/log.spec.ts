@@ -1,4 +1,5 @@
 import { describe, jest, expect, test, beforeEach, afterEach } from '@jest/globals';
+import { Log } from './log';
 
 // mock console output streams
 console.error = jest.fn()
@@ -10,16 +11,8 @@ const testLogMessage = "this is test log message"
 const testCorrelationToken = "this is correlation id"
 const env = process.env
 
-import { Log } from './log';
-
 beforeEach(() => {
-    jest.resetModules()
-    jest.clearAllMocks()
     process.env = { ...env }
-})
-
-afterEach(() => {
-    process.env = env
 })
 
 test.each`

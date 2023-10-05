@@ -1,12 +1,11 @@
-# simple-ts-logging
+# simple-log-ts
 
 Exposes a `Log` class that is to be initialized with a `correlation_id` string. Once a log instance is created, each log method will also print the `correlation_id`.
 
 Useful in event driven apps where each event carries info that you would later want to search for, and correlate with other events.
 
-Library uses inspect from `util` node package.
-
-It uses `LOGLEVEL` environment variable to decide which log statements are to be printed.
+- applied is `inspect(d, false, 10, false))` on each argument passed 
+- uses `LOGLEVEL` environment variable to decide which log statements are to be printed.
 
 Example usage: 
 Suppose we want to print 3 different variables in a log statement:

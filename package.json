@@ -4,10 +4,11 @@
   "description": "support for loglevels and correlation_id",
   "main": "log.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "tsc"
   },
   "keywords": ["log", "logging", "typescript", "correlation"],
-  "author": "",
+  "author": "akrsmv",
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^29.5.5",

@@ -1,4 +1,4 @@
-import { describe, jest, expect, test, beforeEach, afterEach } from '@jest/globals';
+import { describe, jest, expect, test, beforeEach } from '@jest/globals';
 import { Log } from './log';
 
 // mock console output streams

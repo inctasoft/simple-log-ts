@@ -7,7 +7,12 @@
     "test": "jest",
     "build": "tsc"
   },
-  "keywords": ["log", "logging", "typescript", "correlation"],
+  "keywords": [
+    "log",
+    "logging",
+    "typescript",
+    "correlation"
+  ],
   "author": "akrsmv",
   "license": "MIT",
   "devDependencies": {
@@ -15,5 +20,8 @@
     "@types/node": "^20.8.2",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1"
+  },
+  "publishConfig": {
+    "@inctasoft:registry": "https://npm.pkg.github.com"
   }
 }

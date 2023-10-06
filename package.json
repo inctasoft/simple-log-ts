@@ -22,6 +22,6 @@
     "ts-jest": "^29.1.1"
   },
   "publishConfig": {
-    "@inctasoft:registry": "https://npm.pkg.github.com"
+    "@inctasoft:registry": ["https://npm.pkg.github.com", "https://registry.npmjs.org/"]
   }
 }

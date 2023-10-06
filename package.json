@@ -1,6 +1,6 @@
 {
-  "name": "@incta/simple-log-ts",
-  "version": "0.0.1",
+  "name": "@inctasoft/simple-log-ts",
+  "version": "0.0.2",
   "description": "support for loglevels and correlation_id",
   "main": "log.js",
   "scripts": {
@@ -22,6 +22,6 @@
     "ts-jest": "^29.1.1"
   },
   "publishConfig": {
-    "@incta:registry": "https://registry.npmjs.org/"
+    "@inctasoft:registry": "https://npm.pkg.github.com"
   }
 }

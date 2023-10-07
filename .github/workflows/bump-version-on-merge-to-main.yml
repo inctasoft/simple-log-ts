@@ -23,7 +23,6 @@ jobs:
         uses: 'phips28/gh-action-bump-version@master'
         with:
           tag-prefix: 'v'
-          target-branch: "${{ github.ref_name }}"
           commit-message: 'CI: bumps version to {{version}} [skip ci]'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

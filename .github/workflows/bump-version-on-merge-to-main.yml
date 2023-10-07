@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: 'Checkout source code'
         uses: 'actions/checkout@v4'
+        with:  
+          token: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
       - name: 'cat package.json'
         run: cat ./package.json
       - name: 'Automated Version Bump'
@@ -24,6 +26,7 @@ jobs:
           commit-message: 'CI: bumps version to {{version}} [skip ci]'
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
+          GITHUB_USER: akrsmv
       - name: 'cat package.json'
         run: cat ./package.json
       - name: 'Output Step'

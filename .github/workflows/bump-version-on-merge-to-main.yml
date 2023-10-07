@@ -1,22 +1,21 @@
 name: 'Bump Version'
 
 on:
-  push:
+  pull_request:
     branches:
-      - 'main'
+      - 'release/*'
+      - 'hotfix/*'
 
 jobs:
   bump-version:
-    name: 'Bump Version on main'
+    name: 'Bump Version on the current rc branch'
     runs-on: ubuntu-latest
     permissions:
         packages: write
         contents: write
     steps:
       - name: 'Checkout source code'
-        uses: 'actions/checkout@v2'
-        with:
-          ref: ${{ github.ref }}
+        uses: 'actions/checkout@v4'
       - name: 'cat package.json'
         run: cat ./package.json
       - name: 'Automated Version Bump'
@@ -24,7 +23,7 @@ jobs:
         uses: 'phips28/gh-action-bump-version@master'
         with:
           tag-prefix: 'v'
-          target-branch: 'main'
+          target-branch: "$GITHUB_REF_NAME"
           commit-message: 'CI: bumps version to {{version}} [skip ci]'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

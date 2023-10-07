@@ -23,7 +23,7 @@ jobs:
           tag-prefix: 'v'
           commit-message: 'CI: bumps version to {{version}} [skip ci]'
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 'cat package.json'
         run: cat ./package.json
       - name: 'Output Step'

@@ -73,10 +73,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: pull-request
-      run: |
-        gh_pr_up() { gh pr create $* || gh pr edit $* }
-        gh_pr_up --title "My pull request" --body "Description"
-        
+      run: echo gh event is ${{ github.event_name}}
+      run: gh pr create  --title "My pull request" --body "Description"
+
 
 
   # pulling merge comitts back in dev

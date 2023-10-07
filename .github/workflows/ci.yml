@@ -77,7 +77,7 @@ jobs:
       run: |
         echo gh event is ${{ github.event_name}}
         gh pr create  --title "My pull request" --body "Description" --base dev 
-        gh pr merge --admin
+        gh pr merge --admin --rebase
       env:
         GH_TOKEN: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
 

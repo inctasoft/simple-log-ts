@@ -28,14 +28,14 @@ jobs:
   # publishing to github and npm
   publish-gpr:
     if: ${{ github.ref_name == 'main' }}
-    needs: [pull-request]
+    needs: [merge-in-dev]
     runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - run: git checkout HEAD
+      - run: git pull
       - uses: actions/setup-node@v3
         with:
           node-version: 16
@@ -50,14 +50,14 @@ jobs:
 
   publish-npm:
     if: ${{ github.ref_name == 'main' }}
-    needs: [pull-request]
+    needs: [merge-in-dev]
     runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - run: git checkout HEAD
+      - run: git pull
       - uses: actions/setup-node@v3
         with:
           node-version: 16
@@ -71,7 +71,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
   # pulling merge comitts back in dev          
-  pull-request:
+  merge-in-dev:
     if: ${{ github.ref_name != 'dev' }}
     needs: [build, bump-version]
     runs-on: ubuntu-latest
@@ -79,7 +79,7 @@ jobs:
       pull-requests: write
     steps:
     - uses: actions/checkout@v4
-    - name: pull-request
+    - name: merge-in-dev
       run: |
         echo gh event is ${{ github.event_name}}
         gh pr create  --title "automerge dev <- ${{github.ref_name}}" --body "Automatic PR bringing commits in ${{github.ref_name}} to dev" --base dev 

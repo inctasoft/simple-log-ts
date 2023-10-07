@@ -73,8 +73,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: pull-request
-      run: echo gh event is ${{ github.event_name}}
-      run: gh pr create  --title "My pull request" --body "Description"
+      run: |
+        echo gh event is ${{ github.event_name}}
+        gh pr create  --title "My pull request" --body "Description"
 
 
 

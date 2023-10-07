@@ -1,4 +1,4 @@
-name: Node.js Package
+name: Node.js CICD
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci
-    - run: npm run build --if-present
+    - run: npm run build
     - run: npm test
 
   # publishing to github and npm
@@ -42,6 +42,7 @@ jobs:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
       - run: npm ci
+      - run: npm run build
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
@@ -60,6 +61,7 @@ jobs:
           node-version: 16
           registry-url: https://registry.npmjs.org/
       - run: npm ci
+      - run: npm run build
       - run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
@@ -80,42 +82,6 @@ jobs:
         gh pr merge --admin --merge
       env:
         GH_TOKEN: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
-
-
-
-  # pulling merge comitts back in dev
-  # pull-request:
-  #   if: ${{ github.ref_name != 'dev' }}
-  #   needs: [build, bump-version]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - name: 'Checkout source code'
-  #     uses: 'actions/checkout@v4'
-  #     with:  
-  #       token: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
-  #   - id: pull-request
-  #     name: pull-request
-  #     uses: repo-sync/pull-request@v2
-  #     with:
-  #       destination_branch: dev
-  #       pr_title: "Pulling ${GITHUB_REF#refs/heads/} into dev"
-  #       pr_body: "This is an automated Pull Request containing all changes that exist in ${GITHUB_REF#refs/heads/} that do not yet exist in dev"
-  #       pr_label: "automated"
-  #       github_token: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
-  #   - id: approve-pull-request
-  #     if: ${{steps.pull-request.outputs.pr_number != ''}}
-  #     uses: hmarr/auto-approve-action@v2
-  #     with:
-  #       github-token: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
-  #       pull-request-number: ${{ steps.pull-request.outputs.pr_number }}
-  #   - name: automerge
-  #     if: ${{steps.pull-request.outputs.pr_number != ''}}
-  #     uses: "pascalgn/automerge-action@v0.14.3"
-  #     env:
-  #       GITHUB_TOKEN: "${{ secrets.PAT_TOKEN_GHA_AUTH }}"
-  #       PULL_REQUEST: "${{ steps.pull-request.outputs.pr_number }}"
-  #       MERGE_LABELS: ""
-  #       MERGE_RETRIES: "0"
 
   # bump version only if pushing to main branch
   bump-version:

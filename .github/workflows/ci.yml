@@ -66,16 +66,16 @@ jobs:
 
   # pulling merge comitts back in dev          
   pull-request:
-    if: ${{ github.ref_name != 'dev' }}
+    if: ${{ github.ref_name != 'dev' && github.event_name == 'push' }}
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: pull-request
       run: |
         echo gh event is ${{ github.event_name}}
-        gh pr create  --title "My pull request" --body "Description"
+        gh pr create  --title "My pull request" --body "Description" --base dev
       env:
         GH_TOKEN: ${{ github.token }}
 

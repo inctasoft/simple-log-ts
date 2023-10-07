@@ -1,9 +1,8 @@
 # simple-log-ts
 
-# NOTE
-
-This repo and the code in it (although working) is used to test github workflows
-
+```
+npm install @inctasoft/simple-log-ts
+```
 
 Exposes a `Log` class that is to be initialized with a `correlation_id` string. Once a log instance is created, each log method will also print the `correlation_id`.
 
@@ -12,11 +11,13 @@ Useful in event driven apps where each event carries info that you would later w
 - applied is `inspect(d, false, 10, false))` on each argument passed 
 - uses `LOGLEVEL` environment variable to decide which log statements are to be printed.
 
+_happy to receive prs extending the lib_
+
 Example usage: 
 Suppose we want to print 3 different variables in a log statement:
 
 ```
-import { Log } from "@incta/simple-log-ts";
+import { Log } from "@inctasoft/simple-log-ts";
 
 const my_correlation_id = 'my_correlation_id' // or {correlation_id: 'my_correlation_id'}
 const log = new Log(my_correlation_id);

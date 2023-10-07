@@ -1,10 +1,8 @@
 name: 'Bump Version'
 
 on:
-  pull_request:
-    branches:
-      - 'release/*'
-      - 'hotfix/*'
+  push:
+    branches: [ "main" ]
 
 jobs:
   bump-version:
@@ -23,10 +21,9 @@ jobs:
         uses: 'phips28/gh-action-bump-version@master'
         with:
           tag-prefix: 'v'
-          target-branch: "$GITHUB_REF_NAME"
           commit-message: 'CI: bumps version to {{version}} [skip ci]'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
       - name: 'cat package.json'
         run: cat ./package.json
       - name: 'Output Step'

@@ -1,6 +1,6 @@
-import { inspect } from 'util'
+import { inspect } from 'util';
 
-const logLevels = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRIT']
+const logLevels = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRIT'];
 
 export class Log {
     private _correlation_id: string;

@@ -30,16 +30,14 @@ jobs:
   # publishing to github and npm
   publish-gpr:
     if: ${{ github.ref_name == 'main' }}
-    needs: [pull-request]
+    needs: [build, bump-version]
     runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-      - run: git checkout HEAD^
+      - run: git checkout HEAD
       - uses: actions/setup-node@v3
         with:
           node-version: 16
@@ -54,16 +52,14 @@ jobs:
 
   publish-npm:
     if: ${{ github.ref_name == 'main' }}
-    needs: [pull-request]
+    needs: [build, bump-version]
     runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-      - run: git checkout HEAD^
+      - run: git checkout HEAD
       - uses: actions/setup-node@v3
         with:
           node-version: 16

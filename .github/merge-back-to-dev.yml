@@ -4,7 +4,7 @@ on:
   push:
     branches:
     - "release/*"
-    - main
+    - "main"
 
 jobs:
   pull-request:
@@ -18,9 +18,9 @@ jobs:
       name: pull-request
       uses: repo-sync/pull-request@v2
       with:
-        destination_branch: integration
-        pr_title: "Pulling ${GITHUB_REF#refs/heads/} into integration"
-        pr_body: "This is an automated Pull Request containing all changes that exist in ${GITHUB_REF#refs/heads/} that do not yet exist in integration"
+        destination_branch: dev
+        pr_title: "Pulling ${GITHUB_REF#refs/heads/} into dev"
+        pr_body: "This is an automated Pull Request containing all changes that exist in ${GITHUB_REF#refs/heads/} that do not yet exist in dev"
         pr_label: "automated"
         github_token: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
     - id: approve-pull-request

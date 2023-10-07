@@ -1,6 +1,6 @@
 {
   "name": "@inctasoft/simple-log-ts",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "support for loglevels and correlation_id",
   "main": "dist/log.js",
   "scripts": {

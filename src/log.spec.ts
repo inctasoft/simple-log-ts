@@ -38,14 +38,14 @@ ${'CRIT'}   |${['logcrit']}
         // ASSERT logdebug
         if ((expectedLogMethods as string[]).includes('logdebug')) {
             expect(console.log).toBeCalledTimes(1)
-            expect(console.log).toBeCalledWith({ "0": `'${testLogMessage}'`, "correlation": testCorrelationToken, "loglevel": "DEBUG" })
+            expect(console.log).toBeCalledWith(expect.objectContaining({ timestamp: expect.any(Number), "0": `${testLogMessage}`, "correlation": testCorrelationToken, "loglevel": "DEBUG" }))
         } else {
             expect(console.log).toBeCalledTimes(0)
         }
         // ASSERT loginfo
         if ((expectedLogMethods as string[]).includes('loginfo')) {
             expect(console.info).toBeCalledTimes(1)
-            expect(console.info).toBeCalledWith({ "0": `'${testLogMessage}'`, "correlation": testCorrelationToken, "loglevel": "INFO" })
+            expect(console.info).toBeCalledWith(expect.objectContaining({ timestamp: expect.any(Number), "0": `${testLogMessage}`, "correlation": testCorrelationToken, "loglevel": "INFO" }))
         } else {
             expect(console.info).toBeCalledTimes(0)
         }
@@ -53,7 +53,7 @@ ${'CRIT'}   |${['logcrit']}
         // ASSERT logwarn
         if ((expectedLogMethods as string[]).includes('logwarn')) {
             expect(console.warn).toBeCalledTimes(1)
-            expect(console.warn).toBeCalledWith({ "0": `'${testLogMessage}'`, "correlation": testCorrelationToken, "loglevel": "WARN" })
+            expect(console.warn).toBeCalledWith(expect.objectContaining({ timestamp: expect.any(Number), "0": `${testLogMessage}`, "correlation": testCorrelationToken, "loglevel": "WARN" }))
         } else {
             expect(console.warn).toBeCalledTimes(0)
         }
@@ -64,18 +64,18 @@ ${'CRIT'}   |${['logcrit']}
             : (expectedLogMethods as string[]).includes('logerror') ? 1
                 : (expectedLogMethods as string[]).includes('logcrit') ? 1 : 0)
         if ((expectedLogMethods as string[]).includes('logerror')) {
-            expect(console.error).toBeCalledWith({ "0": `'${testLogMessage}'`, "correlation": testCorrelationToken, "loglevel": "ERROR" })
+            expect(console.error).toBeCalledWith(expect.objectContaining({ timestamp: expect.any(Number), "0": `${testLogMessage}`, "correlation": testCorrelationToken, "loglevel": "ERROR" }))
         }
         // ASSERT logcrit
         if ((expectedLogMethods as string[]).includes('logcrit')) {
-            expect(console.error).toBeCalledWith({ "0": `'${testLogMessage}'`, "correlation": testCorrelationToken, "loglevel": "CRIT" })
+            expect(console.error).toBeCalledWith(expect.objectContaining({ timestamp: expect.any(Number), "0": `${testLogMessage}`, "correlation": testCorrelationToken, "loglevel": "CRIT" }))
         }
     })
 test("if not set_correlation_token prior log* call 'UNKNOWN' is used", () => {
     const log = new Log(undefined) // no correlation_id is set
     log.warn(testLogMessage)
     expect(console.warn).toBeCalledTimes(1)
-    expect(console.warn).lastCalledWith({ "0": `'${testLogMessage}'`, "correlation": "UNKNOWN", "loglevel": "WARN" })
+    expect(console.warn).lastCalledWith(expect.objectContaining({ timestamp: expect.any(Number), "0": `${testLogMessage}`, "correlation": "UNKNOWN", "loglevel": "WARN" }))
 })
 test("if not LOGLEVEL default loglevel is WARN", () => {
     process.env.LOGLEVEL = undefined
@@ -91,9 +91,9 @@ test("if not LOGLEVEL default loglevel is WARN", () => {
     expect(console.log).toBeCalledTimes(0)
     expect(console.warn).toBeCalledTimes(1)
     expect(console.error).toBeCalledTimes(2) //1 for error, 1 for crit
-    expect(console.warn).nthCalledWith(1, { "0": `'${testLogMessage}'`, "correlation": "UNKNOWN", "loglevel": "WARN" })
-    expect(console.error).nthCalledWith(1, { "0": `'${testLogMessage}'`, "correlation": "UNKNOWN", "loglevel": "ERROR" })
-    expect(console.error).nthCalledWith(2, { "0": `'${testLogMessage}'`, "correlation": "UNKNOWN", "loglevel": "CRIT" })
+    expect(console.warn).nthCalledWith(1, expect.objectContaining({ timestamp: expect.any(Number), "0": `${testLogMessage}`, "correlation": "UNKNOWN", "loglevel": "WARN" }))
+    expect(console.error).nthCalledWith(1, expect.objectContaining({ timestamp: expect.any(Number), "0": `${testLogMessage}`, "correlation": "UNKNOWN", "loglevel": "ERROR" }))
+    expect(console.error).nthCalledWith(2, expect.objectContaining({ timestamp: expect.any(Number), "0": `${testLogMessage}`, "correlation": "UNKNOWN", "loglevel": "CRIT" }))
 })
 
 const expectedCorrelationToken = 'THE TEST CORELLATION ID'

@@ -6,6 +6,9 @@ on:
     - "release/*"
     - "main"
 
+needs:
+  - .github/workflows/bump-version-on-merge-to-main.yml
+
 jobs:
   pull-request:
     runs-on: ubuntu-latest

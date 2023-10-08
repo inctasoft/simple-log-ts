@@ -28,7 +28,7 @@ jobs:
   # publishing to github only if pushing to main branch
   publish-gpr:
     if: ${{ github.ref_name == 'main' }}
-    needs: [merge-in-dev]
+    needs: [bump-version]
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -51,7 +51,7 @@ jobs:
   # publishing to npm only if pushing to main branch
   publish-npm:
     if: ${{ github.ref_name == 'main' }}
-    needs: [merge-in-dev]
+    needs: [bump-version]
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -111,7 +111,7 @@ jobs:
   # pulling merge comitts back in dev     
   merge-in-dev:
     if: ${{ github.ref_name != 'dev' }}
-    needs: [build, bump-version]
+    needs: [bump-version]
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write

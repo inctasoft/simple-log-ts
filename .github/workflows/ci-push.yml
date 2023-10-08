@@ -3,8 +3,6 @@ name: Node.js CICD
 on:
   push:
     branches: [ "dev", "main", "release/**", "hotfix/**" ]
-  pull_request:
-    branches: [ "dev", "main", "release/**", "hotfix/**" ]
 
 jobs:
   build:
@@ -30,7 +28,7 @@ jobs:
   # publishing to github and npm
   publish-gpr:
     if: ${{ github.ref_name == 'main' }}
-    needs: [build, bump-version]
+    needs: [pull-request]
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -52,7 +50,7 @@ jobs:
 
   publish-npm:
     if: ${{ github.ref_name == 'main' }}
-    needs: [build, bump-version]
+    needs: [pull-request]
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -74,7 +72,7 @@ jobs:
 
   # pulling merge comitts back in dev          
   pull-request:
-    if: ${{ github.ref_name != 'dev' && github.event_name == 'push' }}
+    if: ${{ github.ref_name != 'dev' }}
     needs: [build, bump-version]
     runs-on: ubuntu-latest
     permissions:

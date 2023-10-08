@@ -1,24 +1,23 @@
 # simple-log-ts
 
-## NOTEs
-
-- _This repo and the code in it (although working) is used to scafold a github workflows for a Node.js SDLC._
+## NOTE
+- _This is a very simple logger, providing support for loglevels and `correlation` string that is always logged_
 - _If you are looking for a decent logger in the context of AWS, you may want to consider using https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/_
+- __This repo and the code in it (although working) is used to scafold a github workflows for a Node.js SDLC.__
 
-
-# On Github Workflow in this repo
+## On Github Workflow
 
 - `dev`, `main`, `release/**`, `hotfix/**` are protected branches
 - `dev` is default branch
 - on push to  `main`:
-  - package version is bumped depending on commit messages, using https://github.com/phips28/gh-action-bump-version:
+  - package version is bumped depending on commit messages
     - see https://github.com/phips28/gh-action-bump-version#workflow on commit messages
   - new tag is being created with the newly bumped version
 - on push to `main`, `release/**` or `hotfix/**`, commits are pulled back in `dev` branch 
   - in the case of a push to `main`, this job will also pull the version bump commit from `main` into `dev`
 - on push to `main` (TODO) `gh release` is created
 
-# On the code in this repo
+## On simple-log-ts
 
 ```
 npm install @inctasoft/simple-log-ts

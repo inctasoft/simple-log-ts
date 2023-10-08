@@ -14,7 +14,7 @@ export class Log {
         }
     }
     
-    constructor(correlation?: CorrelationId | { correlation_id?: CorrelationId, [x: string]: unknown }) {
+    constructor(correlation?: CorrelationId | { correlation_id?: CorrelationId }) {
         if (correlation instanceof String || typeof correlation === 'string') {
             this._correlation_id = String(correlation)
         }

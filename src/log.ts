@@ -2,6 +2,7 @@ import { inspect } from "util";
 
 const logLevels = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRIT'];
 
+export type CorrelationId = undefined | string | String
 export class Log {
     private _correlation_id: string;
 
@@ -13,12 +14,12 @@ export class Log {
         }
     }
     
-    constructor(correlation: string | { correlation_token: string } & any) {
+    constructor(correlation?: CorrelationId | { correlation_id?: CorrelationId, [x: string]: unknown }) {
         if (correlation instanceof String || typeof correlation === 'string') {
             this._correlation_id = String(correlation)
         }
-        else if (correlation?.correlation_token) {
-            this._correlation_id = String(correlation?.correlation_token)
+        else if (correlation?.correlation_id) {
+            this._correlation_id = String(correlation?.correlation_id)
         } else {
             this._correlation_id = 'UNKNOWN'
         }

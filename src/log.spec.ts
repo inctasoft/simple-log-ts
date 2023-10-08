@@ -79,7 +79,7 @@ test("if not set_correlation_token prior log* call 'UNKNOWN' is used", () => {
 })
 test("if not LOGLEVEL default level is WARN", () => {
     process.env.LOGLEVEL = undefined
-    const log = new Log({}); // no correlation_id is set
+    const log = new Log({correlation_id: undefined}); // no correlation_id is set
 
     log.debug(testLogMessage)
     log.info(testLogMessage)
@@ -98,23 +98,23 @@ test("if not LOGLEVEL default level is WARN", () => {
 
 const expectedCorrelationToken = 'THE TEST CORELLATION ID'
 describe('setting correlation id', () => {
-  test('by passing plain string', () => {
-    const log = new Log(expectedCorrelationToken)
-    expect(log.correlation_id).toBe(expectedCorrelationToken);
-  });
+    test('by passing plain string', () => {
+        const log = new Log(expectedCorrelationToken)
+        expect(log.correlation_id).toBe(expectedCorrelationToken);
+    });
 
-  test('by passing String(\'...\')', () => {
-    const log = new Log(String(expectedCorrelationToken))
-    expect(log.correlation_id).toBe(expectedCorrelationToken);
-  });
-  
-  test('by passing new String(\'...\')', () => {
-    const log = new Log(new String(expectedCorrelationToken))
-    expect(log.correlation_id).toBe(expectedCorrelationToken);
-  });
+    test('by passing String(\'...\')', () => {
+        const log = new Log(String(expectedCorrelationToken))
+        expect(log.correlation_id).toBe(expectedCorrelationToken);
+    });
 
-  test('by passing object contining `correlation_token: sting`', () => {
-    const log = new Log({correlation_token: expectedCorrelationToken, someOtherProp: 'will not be used'})
-    expect(log.correlation_id).toBe(expectedCorrelationToken);
-  });
+    test('by passing new String(\'...\')', () => {
+        const log = new Log(new String(expectedCorrelationToken))
+        expect(log.correlation_id).toBe(expectedCorrelationToken);
+    });
+
+    test('by passing object contining `correlation_id: sting`', () => {
+        const log = new Log({ correlation_id: expectedCorrelationToken, someOtherProp: 'will not be used' })
+        expect(log.correlation_id).toBe(expectedCorrelationToken);
+    });
 });

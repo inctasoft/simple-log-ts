@@ -17,8 +17,7 @@
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
     "composite": true,
-    "outDir": "dist",
-    "rootDir": "src"
+    "outDir": "dist"
   },
   // NEW: Options for file/directory watching
   "watchOptions": {

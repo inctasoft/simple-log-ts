@@ -1,5 +1,3 @@
-import { inspect } from 'util';
-
 const logLevels = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRIT'];
 
 export class Log {
@@ -9,7 +7,8 @@ export class Log {
     
     private logIfLevelInRange(loglevel: string, logFn: Function, ...data: any) {
         if (this.allowedLogLevels(process.env.LOGLEVEL).includes(loglevel)) {
-            logFn.call(null, { loglevel, correlation: this._correlation_id, ...data.map((d: any) => inspect(d, false, 10, false)) })
+            // logFn.call(null, { loglevel, correlation: this._correlation_id, ...data.map((d: any) => inspect(d, false, 10, false)) })
+            logFn.call(null, { timestamp: new Date().getTime(), loglevel, correlation: this._correlation_id, ...data })
         }
     }
 

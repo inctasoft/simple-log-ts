@@ -33,7 +33,9 @@ jobs:
           # mandatory
           -Dsonar.projectKey=inctasoft_simple-log-ts
           -Dsonar.organization=inctasoft
-          -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
+          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+          -Dsonar.typescript.tsconfigPaths=tsconfig.json
+          -Dsonar.sources=src/**/*.ts,!src/**/*.spec.ts
 
   # publishing to github only if pushing to main branch
   publish-gpr:

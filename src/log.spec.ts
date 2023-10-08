@@ -29,7 +29,7 @@ ${'OTHER'}  |${['logcrit']} // logcrit is always enabled, if LOGLEVEL is not par
         const expectedLogMethods = args.expectedLogMethods as string[];
 
         //ARRANGE
-        process.env.LOGLEVEL = LOGLEVEL as string;
+        process.env.LOGLEVEL = LOGLEVEL;
         const log = new Log(testCorrelationToken)
 
         // ACT

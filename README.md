@@ -17,7 +17,7 @@ Example usage:
 Suppose we want to print 3 different variables in a log statement:
 
 ```
-import { Log } from "@inctasoft/simple-log-ts";
+import { Log } from "./log";
 
 const my_correlation_id = 'my_correlation_id' // or {correlation_id: 'my_correlation_id'}
 const log = new Log(my_correlation_id);
@@ -26,11 +26,11 @@ const my_object = {a:1, b: 'xyz', c: { nested: ['elem1','elem2', 3], more_nested
 const my_string = 'Lorem ipsum';
 const my_number = 42;
 
-// log methods in order of priority, see log.spec.ts
-log.debug(my_object, my_string, my_number);  
-log.info(my_object, my_string, my_number);
-log.warn(my_object, my_string, my_number);
-log.error(my_object, my_string, my_number);
+log.debug(my_string);  
+log.info(my_number);
+log.warn(my_object);
+log.error(my_string);
+log.crit(my_number);
 
 ```
 
@@ -38,27 +38,29 @@ result:
 
 ```
 {
-  '0': '{\n' +
+  timestamp: 1696731355442,
+  level: 'WARN',
+  correlation: 'my_correlation_id',
+  data: '{\n' +
     '  a: 1,\n' +
     "  b: 'xyz',\n" +
     "  c: { nested: [ 'elem1', 'elem2', 3 ], more_nested: { d: 1, e: '2' } }\n" +
-    '}',
-  '1': "'Lorem ipsum'",
-  '2': '42',
-  loglevel: 'WARN',
-  correlation: 'my_correlation_id'
+    '}'
 }
 {
-  '0': '{\n' +
-    '  a: 1,\n' +
-    "  b: 'xyz',\n" +
-    "  c: { nested: [ 'elem1', 'elem2', 3 ], more_nested: { d: 1, e: '2' } }\n" +
-    '}',
-  '1': "'Lorem ipsum'",
-  '2': '42',
-  loglevel: 'ERROR',
-  correlation: 'my_correlation_id'
+  timestamp: 1696731355444,
+  level: 'ERROR',
+  correlation: 'my_correlation_id',
+  data: "'Lorem ipsum'"
+}
+{
+  timestamp: 1696731355444,
+  level: 'CRIT',
+  correlation: 'my_correlation_id',
+  data: '42'
 }
 ```
 
-Notice how only `WARN` and `ERROR` log statements are printed. This is because `process.env.LOGLEVEL` was not set and in this case `WARN` level is assumed. See `log.spec.ts` for details
+Notice how only `WARN`, `ERROR` and `CRIT` log statements are printed. This is because `process.env.LOGLEVEL` was not set and in this case `WARN` level is assumed. See `log.spec.ts` for details. 
+
+NOTE that both `CRIT` and `ERROR` levels uses console.error stream. However by setting `process.env.LOGLEVEL` to `CRIT` one can filter out other errors, leaving only those logged by the `crit` method.

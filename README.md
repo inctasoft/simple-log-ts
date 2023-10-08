@@ -1,11 +1,11 @@
-# simple-log-ts
+[SonarCloud results](https://sonarcloud.io/dashboard/index/inctasoft_simple-log-ts/inctasoft)
 
-## NOTE
+# NOTE
 - _This is a very simple logger, providing support for loglevels and `correlation` string that is always logged_
 - _If you are looking for a decent logger in the context of AWS, you may want to consider using https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/_
 - __This repo and the code in it (although working) is used to scafold a github workflows for a Node.js SDLC.__
 
-## On Github Workflow
+## Workflow
 
 - `dev`, `main`, `release/**`, `hotfix/**` are protected branches
 - `dev` is default branch
@@ -17,7 +17,7 @@
   - in the case of a push to `main`, this job will also pull the version bump commit from `main` into `dev`
 - on push to `main` (TODO) `gh release` is created
 
-## On simple-log-ts
+## simple-log-ts
 
 ```
 npm install @inctasoft/simple-log-ts

@@ -34,4 +34,5 @@ jobs:
           -Dsonar.organization=inctasoft
           -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
           -Dsonar.typescript.tsconfigPaths=tsconfig.json
-          -Dsonar.sources=src/**/*.ts,!src/**/*.spec.ts
+          -Dsonar.sources=src
+          -Dsonar.tests=test

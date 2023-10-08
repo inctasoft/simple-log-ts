@@ -1,5 +1,5 @@
 import { describe, jest, expect, test, beforeEach } from '@jest/globals';
-import { Log } from './log';
+import { Log } from '../src/log';
 
 // mock console output streams
 console.error = jest.fn()

@@ -3,10 +3,18 @@ name: 'Bump Version'
 on:
   push:
     branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+        create_release:
+            description: "`true` if package version should be bumped"
+            type: choice
+            options: ["false", "true"]
+            default: "false"
 
-jobs:
+jobs: 
   bump-version:
-    name: 'Bump Version on the current rc branch'
+    if: inputs.create_release == 'true'
+    name: 'Bump Version on the package version'
     runs-on: ubuntu-latest
     permissions:
         packages: write

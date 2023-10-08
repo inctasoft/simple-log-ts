@@ -76,8 +76,8 @@ jobs:
     - name: pull-request
       run: |
         echo gh event is ${{ github.event_name}}
-        gh pr create  --title "My pull request" --body "Description" --base dev 
-        gh pr merge --admin --rebase
+        gh pr create  --title "automerge dev <- ${{github.ref_name}}" --body "Automatic PR bringing commits in ${{github.ref_name}} to dev" --base dev 
+        gh pr merge --admin
       env:
         GH_TOKEN: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
 

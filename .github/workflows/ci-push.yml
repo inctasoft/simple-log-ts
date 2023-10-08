@@ -75,7 +75,7 @@ jobs:
   bump-version:
     if: ${{ github.ref_name == 'main' }}
     needs: build
-    name: 'Bump Version on the current rc branch'
+    name: 'if main branch: Bump Version'
     runs-on: ubuntu-latest
     permissions:
         packages: write

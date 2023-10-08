@@ -25,7 +25,7 @@ jobs:
     - run: npm run build
     - run: npm test
 
-  # publishing to github and npm
+  # publishing to github only if pushing to main branch
   publish-gpr:
     if: ${{ github.ref_name == 'main' }}
     needs: [merge-in-dev]
@@ -48,6 +48,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
+  # publishing to npm only if pushing to main branch
   publish-npm:
     if: ${{ github.ref_name == 'main' }}
     needs: [merge-in-dev]
@@ -70,23 +71,6 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
-  # pulling merge comitts back in dev          
-  merge-in-dev:
-    if: ${{ github.ref_name != 'dev' }}
-    needs: [build, bump-version]
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-    steps:
-    - uses: actions/checkout@v4
-    - name: merge-in-dev
-      run: |
-        echo gh event is ${{ github.event_name}}
-        gh pr create  --title "automerge dev <- ${{github.ref_name}}" --body "Automatic PR bringing commits in ${{github.ref_name}} to dev" --base dev 
-        gh pr merge --admin --merge
-      env:
-        GH_TOKEN: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
-
   # bump version only if pushing to main branch
   bump-version:
     if: ${{ github.ref_name == 'main' }}
@@ -106,14 +90,14 @@ jobs:
       - name: 'Automated Version Bump'
         id: version-bump
         uses: 'phips28/gh-action-bump-version@master'
-        with:
-          tag-prefix: 'v'
-          commit-message: 'CI: bumps version to {{version}} [skip ci]'
-          minor-wording:  'add,Adds,new'
-          major-wording:  'MAJOR,cut-major'
-          patch-wording:  'patch,fixes'     # Providing patch-wording will override commits
-                                            # defaulting to a patch bump.
-          rc-wording:     'RELEASE,alpha'
+        # with: #using defaults from  https://github.com/phips28/gh-action-bump-version#workflow
+        #   tag-prefix: 'v'
+        #   commit-message: 'CI: bumps version to {{version}} [skip ci]'
+        #   minor-wording:  'MINOR'
+        #   major-wording:  'MAJOR'
+        #   patch-wording:  'patch,fixes'     # Providing patch-wording will override commits
+        #                                     # defaulting to a patch bump.
+        #   rc-wording:     'RELEASE,alpha'
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
           GITHUB_USER: akrsmv
@@ -123,3 +107,20 @@ jobs:
         env:
           NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
         run: echo "new tag $NEW_TAG"
+
+  # pulling merge comitts back in dev     
+  merge-in-dev:
+    if: ${{ github.ref_name != 'dev' }}
+    needs: [build, bump-version]
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+    - uses: actions/checkout@v4
+    - name: merge-in-dev
+      run: |
+        echo gh event is ${{ github.event_name}}
+        gh pr create  --title "automerge dev <- ${{github.ref_name}}" --body "Automatic PR bringing commits in ${{github.ref_name}} to dev" --base dev 
+        gh pr merge --admin --merge
+      env:
+        GH_TOKEN: ${{ secrets.PAT_TOKEN_GHA_AUTH }}

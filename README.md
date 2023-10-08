@@ -1,5 +1,25 @@
 # simple-log-ts
 
+## NOTEs
+
+- _This repo and the code in it (although working) is used to scafold a github workflows for a Node.js SDLC._
+- _If you are looking for a decent logger in the context of AWS, you may want to consider using https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/_
+
+
+# On Github Workflow in this repo
+
+- `dev`, `main`, `release/**`, `hotfix/**` are protected branches
+- `dev` is default branch
+- on push to  `main`:
+  - package version is bumped depending on commit messages, using https://github.com/phips28/gh-action-bump-version:
+    - see https://github.com/phips28/gh-action-bump-version#workflow on commit messages
+  - new tag is being created with the newly bumped version
+- on push to `main`, `release/**` or `hotfix/**`, commits are pulled back in `dev` branch 
+  - in the case of a push to `main`, this job will also pull the version bump commit from `main` into `dev`
+- on push to `main` (TODO) `gh release` is created
+
+# On the code in this repo
+
 ```
 npm install @inctasoft/simple-log-ts
 ```
@@ -11,15 +31,13 @@ Useful in event driven apps where each event carries info that you would later w
 - applied is `inspect(d, false, 10, false))` on arguments passed 
 - uses `LOGLEVEL` environment variable to decide which log statements are to be printed.
 
-_happy to receive prs extending the lib_
-
 Example usage: 
-Suppose we want to print 3 different variables in a log statement:
 
 ```
 import { Log } from "./log";
 
-const my_correlation_id = 'my_correlation_id' // or {correlation_id: 'my_correlation_id'}
+const my_correlation_id = {correlation_id: 'some_guid'} 
+
 const log = new Log(my_correlation_id);
 
 const my_object = {a:1, b: 'xyz', c: { nested: ['elem1','elem2', 3], more_nested: {d:1, e: '2'} } };
@@ -40,7 +58,7 @@ result:
 {
   timestamp: 1696731355442,
   level: 'WARN',
-  correlation: 'my_correlation_id',
+  correlation: 'some_guid',
   data: '{\n' +
     '  a: 1,\n' +
     "  b: 'xyz',\n" +
@@ -50,13 +68,13 @@ result:
 {
   timestamp: 1696731355444,
   level: 'ERROR',
-  correlation: 'my_correlation_id',
+  correlation: 'some_guid',
   data: "'Lorem ipsum'"
 }
 {
   timestamp: 1696731355444,
   level: 'CRIT',
-  correlation: 'my_correlation_id',
+  correlation: 'some_guid',
   data: '42'
 }
 ```

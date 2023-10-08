@@ -41,9 +41,21 @@ jobs:
         with:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
-      - run: npm ci
-      - run: npm run build
-      - run: npm publish
+      
+      - name: Build the package
+        run: npm run build
+
+      - name: Publish the package
+        run: npm publish
+
+      - name: Publish the dist folder
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist
+      # - run: npm ci
+      # - run: npm run build
+      # - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
@@ -60,9 +72,21 @@ jobs:
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
-      - run: npm ci
-      - run: npm run build
-      - run: npm publish --access public
+      
+      - name: Build the package
+        run: npm run build
+
+      - name: Publish the package
+        run: npm publish
+
+      - name: Publish the dist folder
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist
+      # - run: npm ci
+      # - run: npm run build
+      # - run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 

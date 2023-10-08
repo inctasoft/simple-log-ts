@@ -1,4 +1,4 @@
-[SonarCloud results](https://sonarcloud.io/dashboard/index/inctasoft_simple-log-ts/inctasoft)
+[SonarCloud results](https://sonarcloud.io/summary/new_code?id=inctasoft_simple-log-ts)
 
 # NOTE
 - _This is a very simple logger, providing support for loglevels and `correlation` string that is always logged_

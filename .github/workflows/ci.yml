@@ -67,6 +67,7 @@ jobs:
   # pulling merge comitts back in dev          
   pull-request:
     if: ${{ github.ref_name != 'dev' && github.event_name == 'push' }}
+    needs: [build, bump-version]
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -77,7 +78,7 @@ jobs:
         echo gh event is ${{ github.event_name}}
         gh pr create  --title "My pull request" --body "Description" --base dev
       env:
-        GH_TOKEN: ${{ github.token }}
+        GH_TOKEN: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
 
 
 

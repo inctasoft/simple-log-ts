@@ -1,5 +1,10 @@
 # simple-log-ts
 
+# NOTE
+
+This repo and the code in it (although working) is used to test github workflows
+
+
 Exposes a `Log` class that is to be initialized with a `correlation_id` string. Once a log instance is created, each log method will also print the `correlation_id`.
 
 Useful in event driven apps where each event carries info that you would later want to search for, and correlate with other events.

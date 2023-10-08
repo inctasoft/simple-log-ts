@@ -41,29 +41,11 @@ jobs:
         with:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
-      
-      # - name: Install dependencies
-      #   run: npm install
-  
-      # - name: Build the package
-      #   run: npm run build
 
-      # - name: Publish the package
-      #   run: npm publish
-
-      # - name: Publish the dist folder
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: dist
-      #     path: dist
       - run: npm ci
       - run: npm run build
       - run: npm publish
-      # - name: Publish the dist folder
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: dist
-      #     path: dist
+
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
@@ -80,29 +62,11 @@ jobs:
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
-      
-      # - name: Install dependencies
-      #   run: npm install
 
-      # - name: Build the package
-      #   run: npm run build
-
-      # - name: Publish the package
-      #   run: npm publish
-
-      # - name: Publish the dist folder
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: dist
-      #     path: dist
       - run: npm ci
       - run: npm run build
       - run: npm publish --access public
-      # - name: Publish the dist folder
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: dist
-      #     path: dist
+
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
@@ -145,6 +109,11 @@ jobs:
         with:
           tag-prefix: 'v'
           commit-message: 'CI: bumps version to {{version}} [skip ci]'
+          minor-wording:  'add,Adds,new'
+          major-wording:  'MAJOR,cut-major'
+          patch-wording:  'patch,fixes'     # Providing patch-wording will override commits
+                                            # defaulting to a patch bump.
+          rc-wording:     'RELEASE,alpha'
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
           GITHUB_USER: akrsmv

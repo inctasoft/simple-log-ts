@@ -5,23 +5,6 @@ on:
     branches: [ "dev", "main", "release/**", "hotfix/**" ]
 
 jobs:
-  sonarcloud:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: sonarsource/sonarcloud-github-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          args:
-            # Unique keys of your project and organization. You can find them in SonarCloud > Information (bottom-left menu)
-            # mandatory
-            -Dsonar.projectKey=inctasoft_simple-log-ts
-            -Dsonar.organization=inctasoft
-
   build:
     runs-on: ubuntu-latest
     name: 'Build and Unit Test'
@@ -40,6 +23,17 @@ jobs:
     - run: npm ci
     - run: npm run build
     - run: npm test
+    - uses: sonarsource/sonarcloud-github-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        args:
+          # Unique keys of your project and organization. You can find them in SonarCloud > Information (bottom-left menu)
+          # mandatory
+          -Dsonar.projectKey=inctasoft_simple-log-ts
+          -Dsonar.organization=inctasoft
+          -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
 
   # publishing to github only if pushing to main branch
   publish-gpr:

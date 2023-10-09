@@ -109,8 +109,8 @@ ${'OTHER'}  |${['logcrit']} // logcrit is always enabled, if LOGLEVEL is not par
         // ASSERT how many times console.error was called, having in mind both CRIT and ERROR use it
         expect(console.error).toBeCalledTimes(expectedConsoleErrCalls)
     })
-test("if not set_correlation_token prior log* call 'UNKNOWN' is used", () => {
-    const log = new Log(undefined) // no correlation_id is set
+test("if correlation_id is not provided, 'UNKNOWN' is used", () => {
+    const log = new Log() // no correlation_id provided
     log.warn(testLogMessage)
     expect(console.warn).toBeCalledTimes(1)
     const actualCallArgumentsValidJson = JSON.parse(String(...console_warn.mock.calls[0]));
@@ -121,9 +121,9 @@ test("if not set_correlation_token prior log* call 'UNKNOWN' is used", () => {
         "level": "WARN"
     }))
 })
-test("if not LOGLEVEL default level is WARN", () => {
+test("if LOGLEVEL not defined, default level is WARN", () => {
     process.env.LOGLEVEL = undefined
-    const log = new Log({ correlation_id: undefined }); // no correlation_id is set
+    const log = new Log();
 
     log.debug(testLogMessage)
     log.info(testLogMessage)

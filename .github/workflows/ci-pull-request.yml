@@ -33,3 +33,5 @@ jobs:
           -Dsonar.projectKey=inctasoft_simple-log-ts
           -Dsonar.organization=inctasoft
           -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
+          -Dsonar.typescript.tsconfigPaths=./tsconfig.json
+          -Dsonar.sources=./src

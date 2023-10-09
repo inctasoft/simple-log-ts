@@ -1,34 +1,5 @@
 [SonarCloud results](https://sonarcloud.io/summary/overall?id=inctasoft_simple-log-ts)
-
-# NOTE
-- __This template repo and the code in it (which works) is used to scafold a simple Node.js SDLC.__
-- _The minimal code in here represents a simple logger, providing support for loglevels and `correlation` string that is always printed_
-- _For more sophisticated logger in the context of AWS serverless, you may want to consider using https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/_
-
-## CICD Workflow
-
-- `dev` is default branch
-- `dev`, `main`, `release/**`, `hotfix/**` are protected branches.
-  - PRs to them will trigger github workflow to Build, Test, Sonarcloud scan
-- on push to  `main`:
-  - package version is bumped depending on commit messages
-    - see https://github.com/phips28/gh-action-bump-version#workflow on commit messages
-  - new tag is being created with the new version
-  - npm package with the new version is pushed to https://registry.npmjs.org/
-  - npm package with the new version is pushed to https://npm.pkg.github.com/
-- on push to `main`, `release/**` or `hotfix/**`, commits are pulled back in `dev` branch 
-  - in the case of a push to `main`, this job will also pull the version bump commit from `main` into `dev`
-- on push to `main` (TODO) `gh release` is created
-
-## Using the template 
-
-- Upon creating a repository from the template the CICD pipeline will fail for the `sonarcloud` step
-- You would want to first change contentsof `package.json` adding the name of your package, dependencies, etc.
-- make sure these secrets exists, have access to your repo and are valid:
-  - `PAT_TOKEN_GHA_AUTH` the token of the account to setup git for automatic version bumps and mergebacks in dev. Needs a `repo` scope
-  - `SONAR_TOKEN` - sonar cloud token. You will need a https://sonarcloud.io/ account and a corresponding project
-  - `NPM_TOKEN` - NPM token (classic). You will need a https://www.npmjs.com/ account
-## On simple-log-ts code
+# simple-ts-log
 
 ```
 npm install @inctasoft/simple-log-ts
@@ -38,7 +9,7 @@ Exposes a `Log` class that is to be initialized with a `correlation_id` string. 
 
 Useful in event driven apps where each event carries info that you would later want to search for, and correlate with other events.
 
-- applied is 
+- if data passed is a primitive it will be wrapped as `logData={data}` and then, applied is 
 ```
 formatWithOptions({ colors: true, depth: 10, showHidden: false }, '%j', {
                 timestamp: new Date().getTime(),
@@ -79,5 +50,32 @@ result:
 ```
 
 - Notice how only `WARN`, `ERROR` and `CRIT` log statements are printed. This is because `process.env.LOGLEVEL` was not set and in this case `WARN` level is assumed. See `log.spec.ts` for details. 
-
 - Notice that both `CRIT` and `ERROR` levels uses console.error stream. However by setting `process.env.LOGLEVEL` to `CRIT` one can filter out other errors, leaving only those logged by the `crit` method.
+- If you set `LOGLEVEL` to something different from `DEBUG`,`INFO`,`WARN`,`ERROR` or `CRIT`, for example `LOGLEVEL=SILENT`, `CRIT` level is still printed
+- _For more sophisticated logger in the context of AWS serverless, you may want to consider using https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/_
+
+## CICD Workflow
+
+
+* PRs to `dev`, `main`, `release/**`, `hotfix/**` will trigger github workflow to Build, Test, Sonarcloud scan
+* On push to `main`, `release/**` or `hotfix/**`, commits are pulled back in `dev` branch 
+* On push to  `main`:
+  * package version is bumped depending on commit messages
+    * see https://github.com/phips28/gh-action-bump-version#workflow on commit messages
+    * (version bump commit will be automerged in `dev` from _2._)
+  * new tag is being created with the new version
+  * npm package with the new version is pushed to https://registry.npmjs.org/
+  * npm package with the new version is pushed to https://npm.pkg.github.com/
+  * (TODO) `gh release` is created __!__ https://medium.com/giant-machines/releases-the-easy-way-3ec1c2c3502b
+
+## Using the template repository
+
+- Upon creating a repository from the template the CICD pipeline will fail for the `sonarcloud` step
+- You would want to first change contentsof `package.json` adding the name of your package, dependencies, etc.
+- make sure these secrets exists, have access to your repo and are valid:
+  - `PAT_TOKEN_GHA_AUTH` the token of the account to setup git for automatic version bumps and mergebacks in dev. Needs a `repo` scope
+  - `SONAR_TOKEN` - sonar cloud token. You will need a https://sonarcloud.io/ account and a corresponding project
+  - `NPM_TOKEN` - NPM token (classic). You will need a https://www.npmjs.com/ account
+
+
+

@@ -2,10 +2,10 @@ import { describe, jest, expect, test, beforeEach } from '@jest/globals';
 import { Log } from '../src/log';
 
 // mock console output streams
-console.error = jest.fn()
-console.info = jest.fn()
-console.log = jest.fn()
-console.warn = jest.fn()
+const console_error = console.error = jest.fn()
+const console_info = console.info = jest.fn()
+const console_log = console.log = jest.fn()
+const console_warn = console.warn = jest.fn()
 
 const testLogMessage = "this is test log message"
 const testCorrelationToken = "this is correlation id"
@@ -41,15 +41,28 @@ ${'OTHER'}  |${['logcrit']} // logcrit is always enabled, if LOGLEVEL is not par
 
         // ASSERT logdebug
         if ((expectedLogMethods).includes('logdebug')) {
-            expect(console.log).toBeCalledTimes(1)
-            expect(console.log).toBeCalledWith(expect.objectContaining({ timestamp: expect.any(Number), "data": `'${testLogMessage}'`, "correlation": testCorrelationToken, "level": "DEBUG" }))
+            expect(console.log).toBeCalledTimes(1);
+            const actualCallArgumentsValidJson = JSON.parse(String(...console_log.mock.calls[0]));
+            expect(actualCallArgumentsValidJson).toEqual(expect.objectContaining({
+                timestamp: expect.any(Number),
+                "data": `${testLogMessage}`,
+                "correlation": testCorrelationToken,
+                "level": "DEBUG"
+            }))
         } else {
             expect(console.log).toBeCalledTimes(0)
         }
+
         // ASSERT loginfo
         if ((expectedLogMethods).includes('loginfo')) {
-            expect(console.info).toBeCalledTimes(1)
-            expect(console.info).toBeCalledWith(expect.objectContaining({ timestamp: expect.any(Number), "data": `'${testLogMessage}'`, "correlation": testCorrelationToken, "level": "INFO" }))
+            expect(console.info).toBeCalledTimes(1);
+            const actualCallArgumentsValidJson = JSON.parse(String(...console_info.mock.calls[0]));
+            expect(actualCallArgumentsValidJson).toEqual(expect.objectContaining({
+                timestamp: expect.any(Number),
+                "data": `${testLogMessage}`,
+                "correlation": testCorrelationToken,
+                "level": "INFO"
+            }))
         } else {
             expect(console.info).toBeCalledTimes(0)
         }
@@ -57,33 +70,56 @@ ${'OTHER'}  |${['logcrit']} // logcrit is always enabled, if LOGLEVEL is not par
         // ASSERT logwarn
         if ((expectedLogMethods).includes('logwarn')) {
             expect(console.warn).toBeCalledTimes(1)
-            expect(console.warn).toBeCalledWith(expect.objectContaining({ timestamp: expect.any(Number), "data": `'${testLogMessage}'`, "correlation": testCorrelationToken, "level": "WARN" }))
+            const actualCallArgumentsValidJson = JSON.parse(String(...console_warn.mock.calls[0]));
+            expect(actualCallArgumentsValidJson).toEqual(expect.objectContaining({
+                timestamp: expect.any(Number),
+                "data": `${testLogMessage}`,
+                "correlation": testCorrelationToken,
+                "level": "WARN"
+            }))
         } else {
             expect(console.warn).toBeCalledTimes(0)
         }
 
         // ASSERT logerror
-        let expectedConsoleErrCalls = 0; 
+        let expectedConsoleErrCalls = 0;
         if (expectedLogMethods.includes('logerror')) {
-            expectedConsoleErrCalls += 1; 
+            expectedConsoleErrCalls += 1;
+            const actualCallArgumentsValidJson = JSON.parse(String(...console_error.mock.calls[expectedConsoleErrCalls-1]));
+            expect(actualCallArgumentsValidJson).toEqual(expect.objectContaining({
+                timestamp: expect.any(Number),
+                "data": `${testLogMessage}`,
+                "correlation": testCorrelationToken,
+                "level": "ERROR"
+            }))
         }
-        if (expectedLogMethods.includes('logcrit')) {
-            expectedConsoleErrCalls += 1; 
-        }
-        expect(console.error).toBeCalledTimes(expectedConsoleErrCalls)
-        if ((expectedLogMethods).includes('logerror')) {
-            expect(console.error).toBeCalledWith(expect.objectContaining({ timestamp: expect.any(Number), "data": `'${testLogMessage}'`, "correlation": testCorrelationToken, "level": "ERROR" }))
-        }
+
         // ASSERT logcrit
-        if ((expectedLogMethods).includes('logcrit')) {
-            expect(console.error).toBeCalledWith(expect.objectContaining({ timestamp: expect.any(Number), "data": `'${testLogMessage}'`, "correlation": testCorrelationToken, "level": "CRIT" }))
+        if (expectedLogMethods.includes('logcrit')) {
+            expectedConsoleErrCalls += 1;
+            const actualCallArgumentsValidJson = JSON.parse(String(...console_error.mock.calls[expectedConsoleErrCalls-1]));
+            expect(actualCallArgumentsValidJson).toEqual(expect.objectContaining({
+                timestamp: expect.any(Number),
+                "data": `${testLogMessage}`,
+                "correlation": testCorrelationToken,
+                "level": "CRIT"
+            }))
         }
+
+        // ASSERT how many times console.error was called, having in mind both CRIT and ERROR use it
+        expect(console.error).toBeCalledTimes(expectedConsoleErrCalls)
     })
 test("if not set_correlation_token prior log* call 'UNKNOWN' is used", () => {
     const log = new Log(undefined) // no correlation_id is set
     log.warn(testLogMessage)
     expect(console.warn).toBeCalledTimes(1)
-    expect(console.warn).lastCalledWith(expect.objectContaining({ timestamp: expect.any(Number), "data": `'${testLogMessage}'`, "correlation": "UNKNOWN", "level": "WARN" }))
+    const actualCallArgumentsValidJson = JSON.parse(String(...console_warn.mock.calls[0]));
+    expect(actualCallArgumentsValidJson).toEqual(expect.objectContaining({
+        timestamp: expect.any(Number),
+        "data": `${testLogMessage}`,
+        "correlation": "UNKNOWN",
+        "level": "WARN"
+    }))
 })
 test("if not LOGLEVEL default level is WARN", () => {
     process.env.LOGLEVEL = undefined
@@ -99,9 +135,6 @@ test("if not LOGLEVEL default level is WARN", () => {
     expect(console.log).toBeCalledTimes(0)
     expect(console.warn).toBeCalledTimes(1)
     expect(console.error).toBeCalledTimes(2) //1 for error, 1 for crit
-    expect(console.warn).nthCalledWith(1, expect.objectContaining({ timestamp: expect.any(Number), "data": `'${testLogMessage}'`, "correlation": "UNKNOWN", "level": "WARN" }))
-    expect(console.error).nthCalledWith(1, expect.objectContaining({ timestamp: expect.any(Number), "data": `'${testLogMessage}'`, "correlation": "UNKNOWN", "level": "ERROR" }))
-    expect(console.error).nthCalledWith(2, expect.objectContaining({ timestamp: expect.any(Number), "data": `'${testLogMessage}'`, "correlation": "UNKNOWN", "level": "CRIT" }))
 })
 
 const expectedCorrelationToken = 'THE TEST CORELLATION ID'

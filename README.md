@@ -3,7 +3,7 @@
 # NOTE
 - __This template repo and the code in it (although working) is used to scafold a simple Node.js SDLC.__
 - _The minimal code in here represents a simple logger, providing support for loglevels and `correlation` string that is always printed_
-- _If you are looking for more sophisticate logger in the context of AWS serverless, you may want to consider using https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/_
+- _If you are looking for more sophisticated logger in the context of AWS serverless, you may want to consider using https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/_
 
 ## CICD Workflow
 

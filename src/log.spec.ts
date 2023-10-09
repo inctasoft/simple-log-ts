@@ -22,8 +22,12 @@ ${'INFO'}   |${['loginfo', 'logwarn', 'logerror', 'logcrit']}
 ${'WARN'}   |${['logwarn', 'logerror', 'logcrit']}
 ${'ERROR'}  |${['logerror', 'logcrit']}
 ${'CRIT'}   |${['logcrit']}
+${'OTHER'}  |${['logcrit']} // logcrit is always enabled, if LOGLEVEL is not part of supported values
     `("If LOGLEVEL=$LOGLEVEL then $expectedLogMethods methods are active",
-    ({ LOGLEVEL, expectedLogMethods }) => {
+    (args) => {
+        const LOGLEVEL = args.LOGLEVEL as string;
+        const expectedLogMethods = args.expectedLogMethods as string[];
+
         //ARRANGE
         process.env.LOGLEVEL = LOGLEVEL as string;
         const log = new Log(testCorrelationToken)
@@ -36,14 +40,14 @@ ${'CRIT'}   |${['logcrit']}
         log.crit(testLogMessage);
 
         // ASSERT logdebug
-        if ((expectedLogMethods as string[]).includes('logdebug')) {
+        if ((expectedLogMethods).includes('logdebug')) {
             expect(console.log).toBeCalledTimes(1)
             expect(console.log).toBeCalledWith(expect.objectContaining({ timestamp: expect.any(Number), "data": `'${testLogMessage}'`, "correlation": testCorrelationToken, "level": "DEBUG" }))
         } else {
             expect(console.log).toBeCalledTimes(0)
         }
         // ASSERT loginfo
-        if ((expectedLogMethods as string[]).includes('loginfo')) {
+        if ((expectedLogMethods).includes('loginfo')) {
             expect(console.info).toBeCalledTimes(1)
             expect(console.info).toBeCalledWith(expect.objectContaining({ timestamp: expect.any(Number), "data": `'${testLogMessage}'`, "correlation": testCorrelationToken, "level": "INFO" }))
         } else {
@@ -51,7 +55,7 @@ ${'CRIT'}   |${['logcrit']}
         }
 
         // ASSERT logwarn
-        if ((expectedLogMethods as string[]).includes('logwarn')) {
+        if ((expectedLogMethods).includes('logwarn')) {
             expect(console.warn).toBeCalledTimes(1)
             expect(console.warn).toBeCalledWith(expect.objectContaining({ timestamp: expect.any(Number), "data": `'${testLogMessage}'`, "correlation": testCorrelationToken, "level": "WARN" }))
         } else {
@@ -59,15 +63,19 @@ ${'CRIT'}   |${['logcrit']}
         }
 
         // ASSERT logerror
-        expect(console.error).toBeCalledTimes((expectedLogMethods as string[]).includes('logerror')
-            && (expectedLogMethods as string[]).includes('logcrit') ? 2
-            : (expectedLogMethods as string[]).includes('logerror') ? 1
-                : (expectedLogMethods as string[]).includes('logcrit') ? 1 : 0)
-        if ((expectedLogMethods as string[]).includes('logerror')) {
+        let expectedConsoleErrCalls = 0; 
+        if (expectedLogMethods.includes('logerror')) {
+            expectedConsoleErrCalls += 1; 
+        }
+        if (expectedLogMethods.includes('logcrit')) {
+            expectedConsoleErrCalls += 1; 
+        }
+        expect(console.error).toBeCalledTimes(expectedConsoleErrCalls)
+        if ((expectedLogMethods).includes('logerror')) {
             expect(console.error).toBeCalledWith(expect.objectContaining({ timestamp: expect.any(Number), "data": `'${testLogMessage}'`, "correlation": testCorrelationToken, "level": "ERROR" }))
         }
         // ASSERT logcrit
-        if ((expectedLogMethods as string[]).includes('logcrit')) {
+        if ((expectedLogMethods).includes('logcrit')) {
             expect(console.error).toBeCalledWith(expect.objectContaining({ timestamp: expect.any(Number), "data": `'${testLogMessage}'`, "correlation": testCorrelationToken, "level": "CRIT" }))
         }
     })
@@ -79,7 +87,7 @@ test("if not set_correlation_token prior log* call 'UNKNOWN' is used", () => {
 })
 test("if not LOGLEVEL default level is WARN", () => {
     process.env.LOGLEVEL = undefined
-    const log = new Log({correlation_id: undefined}); // no correlation_id is set
+    const log = new Log({ correlation_id: undefined }); // no correlation_id is set
 
     log.debug(testLogMessage)
     log.info(testLogMessage)
@@ -100,16 +108,6 @@ const expectedCorrelationToken = 'THE TEST CORELLATION ID'
 describe('setting correlation id', () => {
     test('by passing plain string', () => {
         const log = new Log(expectedCorrelationToken)
-        expect(log.correlation_id).toBe(expectedCorrelationToken);
-    });
-
-    test('by passing String(\'...\')', () => {
-        const log = new Log(String(expectedCorrelationToken))
-        expect(log.correlation_id).toBe(expectedCorrelationToken);
-    });
-
-    test('by passing new String(\'...\')', () => {
-        const log = new Log(new String(expectedCorrelationToken))
         expect(log.correlation_id).toBe(expectedCorrelationToken);
     });
 

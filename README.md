@@ -8,27 +8,16 @@
 ## CICD Workflow
 
 - `dev` is default branch
-
 - `dev`, `main`, `release/**`, `hotfix/**` are protected branches.
-
   - PRs to them will trigger github workflow to Build, Test, Sonarcloud scan
-
 - on push to  `main`:
-
   - package version is bumped depending on commit messages
-
     - see https://github.com/phips28/gh-action-bump-version#workflow on commit messages
-
   - new tag is being created with the new version
-
   - npm package with the new version is pushed to https://registry.npmjs.org/
-
   - npm package with the new version is pushed to https://npm.pkg.github.com/
-
 - on push to `main`, `release/**` or `hotfix/**`, commits are pulled back in `dev` branch 
-
   - in the case of a push to `main`, this job will also pull the version bump commit from `main` into `dev`
-
 - on push to `main` (TODO) `gh release` is created
 
 ## Using the template 

@@ -1,22 +1,33 @@
 [SonarCloud results](https://sonarcloud.io/summary/overall?id=inctasoft_simple-log-ts)
 
 # NOTE
-- _This is a very simple logger, providing support for loglevels and `correlation` string that is always logged_
+- _This is a template rpository for Node.js simple SDLC_
+- _The minimal code in here represents a simple logger, providing support for loglevels and `correlation` string that is always printed_
 - _If you are looking for a decent logger in the context of AWS, you may want to consider using https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/_
 - __This repo and the code in it (although working) is used to scafold a github workflows for a Node.js SDLC.__
 
-## Workflow
+## CICD Workflow
 
 - `dev`, `main`, `release/**`, `hotfix/**` are protected branches
 - `dev` is default branch
 - on push to  `main`:
   - package version is bumped depending on commit messages
     - see https://github.com/phips28/gh-action-bump-version#workflow on commit messages
-  - new tag is being created with the newly bumped version
+  - new tag is being created with the new version
+  - npm package with the new version is pushed to https://registry.npmjs.org/
+  - npm package with the new version is pushed to https://npm.pkg.github.com/
 - on push to `main`, `release/**` or `hotfix/**`, commits are pulled back in `dev` branch 
   - in the case of a push to `main`, this job will also pull the version bump commit from `main` into `dev`
 - on push to `main` (TODO) `gh release` is created
 
+## Using the template 
+
+- Upon creating a repository from the template the CICD pipeline will fail for the `sonarcloud` step
+- You would want to first change contentsof `package.json` adding the name of your package, dependencies, etc.
+- make sure these secrets exists, have access to your repo and are valid:
+  - `PAT_TOKEN_GHA_AUTH` the token of the account to setup git for automatic version bumps and mergebacks in dev. Needs a `repo` scope
+  - `SONAR_TOKEN` - sonar cloud token. You will need a https://sonarcloud.io/ account and a corresponding project
+  - `NPM_TOKEN` - NPM token (classic). You will need a https://www.npmjs.com/ account
 ## simple-log-ts
 
 ```

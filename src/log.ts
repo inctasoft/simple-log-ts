@@ -2,15 +2,15 @@ import { inspect } from "util";
 
 const logLevels = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRIT'];
 
-export type CorrelationId = undefined | string | String
+export type CorrelationId = undefined | string 
 export class Log {
     private _correlation_id: string;
 
-    private allowedLogLevels = (logLevel: string | undefined) => logLevels.slice(logLevels.indexOf(logLevel || 'WARN'))
+    private allowedLogLevels = (logLevel: string | undefined) => logLevels.slice(logLevels.indexOf(logLevel ?? 'WARN'))
 
     private logIfLevelInRange(loglevel: string, logFn: Function, data: any) {
         if (this.allowedLogLevels(process.env.LOGLEVEL).includes(loglevel)) {
-            logFn.call(null, { timestamp: new Date().getTime(), level: loglevel, correlation: this._correlation_id, data: inspect(data, false, 10, false) } )
+            logFn({ timestamp: new Date().getTime(), level: loglevel, correlation: this._correlation_id, data: inspect(data, false, 10, false) } )
         }
     }
     

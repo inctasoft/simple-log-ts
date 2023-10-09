@@ -1,9 +1,9 @@
 [SonarCloud results](https://sonarcloud.io/summary/overall?id=inctasoft_simple-log-ts)
 
 # NOTE
-- __This template repo and the code in it (although working) is used to scafold a simple Node.js SDLC.__
+- __This template repo and the code in it (which works) is used to scafold a simple Node.js SDLC.__
 - _The minimal code in here represents a simple logger, providing support for loglevels and `correlation` string that is always printed_
-- _If you are looking for more sophisticated logger in the context of AWS serverless, you may want to consider using https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/_
+- _For more sophisticated logger in the context of AWS serverless, you may want to consider using https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/_
 
 ## CICD Workflow
 
@@ -89,6 +89,6 @@ result:
 {"timestamp":1696816253863,"level":"CRIT","correlation":"my_correlation_id","data":42}
 ```
 
-Notice how only `WARN`, `ERROR` and `CRIT` log statements are printed. This is because `process.env.LOGLEVEL` was not set and in this case `WARN` level is assumed. See `log.spec.ts` for details. 
+- Notice how only `WARN`, `ERROR` and `CRIT` log statements are printed. This is because `process.env.LOGLEVEL` was not set and in this case `WARN` level is assumed. See `log.spec.ts` for details. 
 
-NOTE that both `CRIT` and `ERROR` levels uses console.error stream. However by setting `process.env.LOGLEVEL` to `CRIT` one can filter out other errors, leaving only those logged by the `crit` method.
+- Notice that both `CRIT` and `ERROR` levels uses console.error stream. However by setting `process.env.LOGLEVEL` to `CRIT` one can filter out other errors, leaving only those logged by the `crit` method.

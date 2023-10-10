@@ -1,8 +1,8 @@
-name: Node.js CICD
+name: CI:Scan,Package
 
 on:
   push:
-    branches: [ "dev", "main", "release/**", "hotfix/**" ]
+    branches: [ "main" ]
 
 jobs:
   build:

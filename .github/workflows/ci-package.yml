@@ -1,8 +1,8 @@
-name: Node.js CICD
+name: CI:Scan,Package
 
 on:
   push:
-    branches: [ "dev", "main", "release/**", "hotfix/**" ]
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -123,6 +123,14 @@ jobs:
         env:
           NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
         run: echo "new tag $NEW_TAG"
+  # create-relase:
+  #   needs: bump-version
+  #   uses: actions/create-release@v3
+  #   with:
+  #     tag: ${{ github.ref }}
+  #     release_name: ${{ github.ref }}
+  #     body: ${{ readFile('changelog.md') }}
+  #     assets: changelog.md
 
   # pulling merge comitts back in dev     
   merge-in-dev:

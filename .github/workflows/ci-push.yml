@@ -137,6 +137,6 @@ jobs:
       run: |
         echo gh event is ${{ github.event_name}}
         gh pr create  --title "CI: automerge dev <- ${{github.ref_name}} [skip ci]" --body "CI: Automatic PR bringing commits in ${{github.ref_name}} to dev [skip ci]" --base dev 
-        gh pr merge --admin --rebase
+        gh pr merge --admin --merge
       env:
         GH_TOKEN: ${{ secrets.PAT_TOKEN_GHA_AUTH }}

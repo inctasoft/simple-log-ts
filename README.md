@@ -9,27 +9,23 @@ Exposes a `Log` class that is to be initialized with a `correlation_id` string. 
 
 Useful in event driven apps where each event carries info that you would later want to search for, and correlate with other events.
 
-- if data passed is a primitive it will be wrapped as `logData={data}` and then, applied is 
-```
-formatWithOptions({ colors: true, depth: 10, showHidden: false }, '%j', {
-                timestamp: new Date().getTime(),
-                level: loglevel,
-                correlation: this._correlation_id,
-                ...logData
-            }) 
-```
 - uses `LOGLEVEL` environment variable to decide which log statements are to be printed.
+- transforms `Map` and `Set` objects so that they are also printed
+- optionally print types of objects being logged (by passing `printTypes: true` in the constructor)
 
 Example usage: 
 
-```
-import { Log } from "./log";
+```typescript
+import { Log } from "@inctasoft/simple-log-ts";
 
-const my_correlation_id = {correlation_id: 'some_guid'} 
+const log = new Log({ correlation_id: 'my_correlation_id' });
 
-const log = new Log(my_correlation_id);
-
-const my_object = { a: 1, b: 'xyz', c: { nested: ['elem1', 'elem2', 3], more_nested: { nested_1: ['elem1_1', 'elem1_2', 5] } } };
+const my_object = {
+    a: 1, b: 'xyz', c: {
+        nested: ['elem1', new Map([['mapKey', { prop1: 1, prop2: new Date() }]]), 3],
+        more_nested: { nested_1: ['elem1_1', new Set(['a', 'b', new Map([['foo', 'bar']])]), 5] }
+    }
+};
 const my_string = 'Lorem ipsum';
 const my_number = 42;
 
@@ -43,10 +39,10 @@ log.crit(my_number);
 
 result:
 
-```
-{"timestamp":1696816253862,"level":"WARN","correlation":"my_correlation_id","a":1,"b":"xyz","c":{"nested":["elem1","elem2",3],"more_nested":{"nested_1":["elem1_1","elem1_2",5]}}}
-{"timestamp":1696816253863,"level":"ERROR","correlation":"my_correlation_id","data":"Lorem ipsum"}
-{"timestamp":1696816253863,"level":"CRIT","correlation":"my_correlation_id","data":42}
+```json
+{"timestamp":"2023-10-11T10:40:34.415Z","level":"WARN","correlation":"my_correlation_id","message":{"a":1,"b":"xyz","c":{"nested":["elem1",{"mapKey":{"prop1":1,"prop2":"2023-10-11T10:40:34.415Z"}},3],"more_nested":{"nested_1":["elem1_1",["a","b",{"foo":"bar"}],5]}}}}
+{"timestamp":"2023-10-11T10:40:34.415Z","level":"ERROR","correlation":"my_correlation_id","message":"Lorem ipsum"}
+{"timestamp":"2023-10-11T10:40:34.415Z","level":"CRIT","correlation":"my_correlation_id","message":42}
 ```
 
 - Notice how only `WARN`, `ERROR` and `CRIT` log statements are printed. This is because `process.env.LOGLEVEL` was not set and in this case `WARN` level is assumed. See `log.spec.ts` for details. 

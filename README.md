@@ -83,6 +83,7 @@ log statement:
   * npm package with the new version is pushed to https://registry.npmjs.org/
   * npm package with the new version is pushed to https://npm.pkg.github.com/
   * (TODO) `gh release` is created __!__ https://medium.com/giant-machines/releases-the-easy-way-3ec1c2c3502b
+* _pre-commit_ hooks are running tests and linting commit messages. Using `git cz` is encouraged
 
 ## Using the template repository
 

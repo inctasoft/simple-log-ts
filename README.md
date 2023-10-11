@@ -11,11 +11,11 @@ Exposes a `Log` class with `debug`, `info`, `warn`, `error` and `crit` methods.
 
 | process.env.LOGLEVEL | active methods | notes |
 |---|---|---|
-| `DEBUG`| `debug`,`info`,`warn`,`error`,`crit`| |
-| `INFO` | `info`,`warn`,`error`,`crit`| |
-| `WARN` | `warn`,`error`,`crit`| default, if no `LOGLEVEL` is present|
-| `ERROR`| `error`,`crit`| |
-| `SILENT` | `crit` | Both `crit` and `error` methods use console.error stream. However by setting `LOGLEVEL` to `SILENT` you can filter out other errors, leaving only those logged by the `crit` |
+| `DEBUG`| `debug`,`info`,`warn`,`error`,`crit`| | 
+| `INFO` | `info`,`warn`,`error`,`crit`|| 
+| `WARN` | `warn`,`error`,`crit`| default, if no `LOGLEVEL` is present |
+| `ERROR`| `error`,`crit`| Both `crit` and `error` use `console.error` and accept optional second `Error` argument |
+| `SILENT` <br/> (or any other value)| `crit` | Lets you silence all logs, if not using `crit` method(as it is always active, no matter of `LOGLEVEL` value) |
 
 Examples:
 - Empty config
@@ -93,6 +93,4 @@ log statement:
     - `PAT_TOKEN_GHA_AUTH` the token of the account to setup git for automatic version bumps and mergebacks in dev. Needs a `repo` scope
     - `SONAR_TOKEN` - sonar cloud token. You will need a https://sonarcloud.io/ account and a corresponding project
     - `NPM_TOKEN` - NPM token (classic). You will need a https://www.npmjs.com/ account
-
-
-
+  

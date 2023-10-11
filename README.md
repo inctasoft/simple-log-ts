@@ -5,13 +5,16 @@
 npm install @inctasoft/simple-log-ts
 ```
 
-Exposes a `Log` class that is to be initialized with a `correlation_id` string. Once a log instance is created, each log method will also print the `correlation_id`.
+Exposes a `Log` class that could be initialized with a `correlation_id` string. Each log method will always print the `correlation_id`, even if it is not provided (in this case prints `UNKNOWN`). Useful when you explore logs for events, that _should_ have it, but for some reason it is missing.
 
-Useful in event driven apps where each event carries info that you would later want to search for, and correlate with other events.
+If you do not want to use `correlation_id`, initialize the log by `new Log({skipCorrelation: true})`.
 
-- uses `LOGLEVEL` environment variable to decide which log statements are to be printed.
-- transforms `Map` and `Set` objects so that they are also printed
-- optionally print types of objects being logged (by passing `printTypes: true` in the constructor)
+- `process.env.LOGLEVEL` controls which log methods are active.
+  - `['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRIT']`
+  - default level is `WARN` (if `process.env.LOGLEVEL` is not present) 
+  - `log.crit` always prints, even if you set `process.env.LOGLEVEL` to something different from known levels
+- The Log will transform `Map` and `Set` objects so that they are also printed
+- The Log can optionally print types of objects being logged (by passing `printTypes: true` in the constructor).
 
 Example usage: 
 
@@ -45,13 +48,11 @@ result:
 {"timestamp":"2023-10-11T10:40:34.415Z","level":"CRIT","correlation":"my_correlation_id","message":42}
 ```
 
-- Notice how only `WARN`, `ERROR` and `CRIT` log statements are printed. This is because `process.env.LOGLEVEL` was not set and in this case `WARN` level is assumed. See `log.spec.ts` for details. 
-- Notice that both `CRIT` and `ERROR` levels uses console.error stream. However by setting `process.env.LOGLEVEL` to `CRIT` one can filter out other errors, leaving only those logged by the `crit` method.
-- If you set `LOGLEVEL` to something different from `DEBUG`,`INFO`,`WARN`,`ERROR` or `CRIT`, for example `LOGLEVEL=SILENT`, `CRIT` level is still printed
+- Notice that only 'WARN', 'ERROR' and 'CRIT' log statements are printed. This is because `process.env.LOGLEVEL` was not set. See `log.spec.ts` for details. 
+- Notice that both `CRIT` and `ERROR` levels uses console.error stream. However by setting `process.env.LOGLEVEL` to `CRIT` one can filter out other errors, leaving only those logged by the `crit` method. OR, you can completley silence the log if you never use `log.crit`, and set `LOGLEVEL` to anything different than 'DEBUG','INFO','WARN', or 'ERROR'.
 - _For more sophisticated logger in the context of AWS serverless, you may want to consider using https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/_
 
-## CICD Workflow
-
+## CICD
 
 * PRs to `dev`, `main`, `release/**`, `hotfix/**` will trigger github workflow to Build, Test, Sonarcloud scan
 * On push to `main`, `release/**` or `hotfix/**`, commits are pulled back in `dev` branch 

@@ -1,60 +1,50 @@
-import { formatWithOptions, inspect } from "util";
+import { formatWithOptions } from "util";
 import { transform } from "./transform";
 
 const logLevels = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRIT'];
 
-export type CorrelationId = undefined | string
 export type LogConfig = {
-    correlation_id?: CorrelationId,
-    printTypes?: boolean,
-    skipCorrelation?: boolean,
+    correlation_id: string,
+    printMapSetTypes: boolean,
+    printCorrelation: boolean,
     [x: string]: unknown
 }
 export class Log {
-    private _correlation_id: string;
-    private _printTypes: boolean;
-    private _skipCorrelation: boolean;
+    public get config() {
+        return this._config;
+    }
+    public debug = (data: any) => this.logIfLevelInRange('DEBUG', console.log, data);
+    public info = (data: any) => this.logIfLevelInRange('INFO', console.info, data);
+    public warn = (data: any) => this.logIfLevelInRange('WARN', console.warn, data);
+    public error = (data: any, error?: Error) => this.logIfLevelInRange('ERROR', console.error, data, error);
+    public crit = (data: any, error?: Error) => this.logIfLevelInRange('CRIT', console.error, data, error);
+
+    private _config: LogConfig;
     private allowedLogLevels = (logLevel: string | undefined) => logLevels.slice(logLevels.indexOf(logLevel ?? 'WARN'))
 
-    constructor(correlation?: CorrelationId | LogConfig) {
-        if (correlation instanceof String || typeof correlation === 'string') {
-            this._correlation_id = String(correlation);
-            this._printTypes = false;
-            this._skipCorrelation = false;
-        }
-        else if (typeof correlation === 'object') {
-            this._printTypes = correlation.printTypes ?? false;
-            this._skipCorrelation = correlation?.skipCorrelation ?? false;
-            this._correlation_id = String(correlation?.correlation_id);
-        } else {
-            this._correlation_id = 'UNKNOWN';
-            this._printTypes = false;
-            this._skipCorrelation = false;
+    constructor(config?: Partial<LogConfig>) {
+        this._config = {
+            correlation_id: String(config?.correlation_id),
+            printMapSetTypes: config?.printMapSetTypes ?? false,
+            printCorrelation: config?.printCorrelation ?? true
         }
     }
 
-    private logIfLevelInRange(loglevel: string, logFn: Function, data: any) {
+    private logIfLevelInRange(loglevel: string, logFn: Function, data: any, error?: Error) {
         if (this.allowedLogLevels(process.env.LOGLEVEL).includes(loglevel)) {
             const logData = {
                 timestamp: new Date().toISOString(),
                 level: loglevel,
-                message: transform(data, this._printTypes)
+                message: transform(data, this._config.printMapSetTypes)
             };
-            if (! this._skipCorrelation) {
-                Object.assign(logData, { correlation: this._correlation_id })
+            if (this.config.printCorrelation) {
+                Object.assign(logData, { correlation: this._config.correlation_id })
+            }
+            if (error) {
+                const t = transform(error, true);
+                Object.assign(logData, t);
             }
             logFn(formatWithOptions({ colors: true, depth: 10, showHidden: false }, '%j', logData));
         }
     }
-
-    public get correlation_id() {
-        return this._correlation_id;
-    }
-
-    public info = (data: any) => this.logIfLevelInRange('INFO', console.info, data);
-    public debug = (data: any) => this.logIfLevelInRange('DEBUG', console.log, data);
-    public warn = (data: any) => this.logIfLevelInRange('WARN', console.warn, data);
-    public crit = (data: any) => this.logIfLevelInRange('CRIT', console.error, data);
-    public error = (data: any) => this.logIfLevelInRange('ERROR', console.error, data);
-
 }

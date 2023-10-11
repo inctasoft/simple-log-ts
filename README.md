@@ -1,56 +1,75 @@
 [SonarCloud results](https://sonarcloud.io/summary/overall?id=inctasoft_simple-log-ts)
-# simple-ts-log
+# simple-log-ts
 
 ```
 npm install @inctasoft/simple-log-ts
 ```
 
-Exposes a `Log` class that could be initialized with a `correlation_id` string. Each log method will always print the `correlation_id`, even if it is not provided (in this case prints `UNKNOWN`). Useful when you explore logs for events, that _should_ have it, but for some reason it is missing.
+Exposes a `Log` class with `debug`, `info`, `warn`, `error` and `crit` methods.
+- Logs are in JSON format, useful for parsing from log ingesting services
+- `Error`, `Map` `Set` objects are trnsformed into JSON and also printed
 
-If you do not want to use `correlation_id`, initialize the log by `new Log({skipCorrelation: true})`.
+| process.env.LOGLEVEL | active methods | notes |
+|---|---|---|
+| `DEBUG`| `debug`,`info`,`warn`,`error`,`crit`| |
+| `INFO` | `info`,`warn`,`error`,`crit`| |
+| `WARN` | `warn`,`error`,`crit`| default, if no `LOGLEVEL` is present|
+| `ERROR`| `error`,`crit`| |
+| `SILENT` | `crit` | Both `crit` and `error` methods use console.error stream. However by setting `LOGLEVEL` to `SILENT` you can filter out other errors, leaving only those logged by the `crit` |
 
-- `process.env.LOGLEVEL` controls which log methods are active.
-  - `['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRIT']`
-  - default level is `WARN` (if `process.env.LOGLEVEL` is not present) 
-  - `log.crit` always prints, even if you set `process.env.LOGLEVEL` to something different from known levels
-- The Log will transform `Map` and `Set` objects so that they are also printed
-- The Log can optionally print types of objects being logged (by passing `printTypes: true` in the constructor).
-
-Example usage: 
-
+Examples:
+- Empty config
 ```typescript
 import { Log } from "@inctasoft/simple-log-ts";
 
-const log = new Log({ correlation_id: 'my_correlation_id' });
-
-const my_object = {
-    a: 1, b: 'xyz', c: {
-        nested: ['elem1', new Map([['mapKey', { prop1: 1, prop2: new Date() }]]), 3],
-        more_nested: { nested_1: ['elem1_1', new Set(['a', 'b', new Map([['foo', 'bar']])]), 5] }
-    }
-};
-const my_string = 'Lorem ipsum';
-const my_number = 42;
-
-log.debug(my_object);
-log.info(my_object);
-log.warn(my_object);
-log.error(my_string);
-log.crit(my_number);
-
+const log = new Log();
+log.error("oops something hapened, new Error('some err msg'));
 ```
-
-result:
-
+results in:
 ```json
-{"timestamp":"2023-10-11T10:40:34.415Z","level":"WARN","correlation":"my_correlation_id","message":{"a":1,"b":"xyz","c":{"nested":["elem1",{"mapKey":{"prop1":1,"prop2":"2023-10-11T10:40:34.415Z"}},3],"more_nested":{"nested_1":["elem1_1",["a","b",{"foo":"bar"}],5]}}}}
-{"timestamp":"2023-10-11T10:40:34.415Z","level":"ERROR","correlation":"my_correlation_id","message":"Lorem ipsum"}
-{"timestamp":"2023-10-11T10:40:34.415Z","level":"CRIT","correlation":"my_correlation_id","message":42}
+{"timestamp":"2023-10-11T21:50:47.405Z","level":"ERROR","message":"oops something hapened","correlation":"undefined","[Error]":{"stack":"Error: some err msg\n    at Object......","message":"some err msg"}}```
 ```
+- Printing complex objects, and providing `correlation_id`
+```typescript
+import { Log } from "@inctasoft/simple-log-ts";
 
-- Notice that only 'WARN', 'ERROR' and 'CRIT' log statements are printed. This is because `process.env.LOGLEVEL` was not set. See `log.spec.ts` for details. 
-- Notice that both `CRIT` and `ERROR` levels uses console.error stream. However by setting `process.env.LOGLEVEL` to `CRIT` one can filter out other errors, leaving only those logged by the `crit` method. OR, you can completley silence the log if you never use `log.crit`, and set `LOGLEVEL` to anything different than 'DEBUG','INFO','WARN', or 'ERROR'.
-- _For more sophisticated logger in the context of AWS serverless, you may want to consider using https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/_
+const log = new Log({ correlation_id: 'some_guid' });
+log.warn({
+    a: 1, b: 'xyz', my_set: new Set(['foo', 'bar']), nested: {
+        my_arr: [
+            'elem1',
+            new Map([['mapKey', {
+                prop1: 1,
+                prop2: new Date()
+            }]])]
+    }
+});
+```
+results in:
+```json
+{"timestamp":"2023-10-11T21:43:13.765Z","level":"WARN","message":{"a":1,"b":"xyz","my_set":["foo","bar"],"nested":{"my_arr":["elem1",{"mapKey":{"prop1":1,"prop2":"2023-10-11T21:43:13.765Z"}}]}},"correlation":"some_guid"}
+```
+- If you are interested in which transformed objects were of `Map` or `Set` types, provide `printMapSetTypes: true`
+- If you are not into using correlation_id, provide `printCorrelation: false`
+```typescript
+import { Log } from "@inctasoft/simple-log-ts";
+
+const log = new Log({ printMapSetTypes: true, printCorrelation: false});
+log.warn({
+    a: 1, b: 'xyz', my_set: new Set(['foo', 'bar']), nested: {
+        my_arr: [
+            'elem1',
+            new Map([['mapKey', {
+                prop1: 1,
+                prop2: new Date()
+            }]])]
+    }
+});
+```
+log statement:
+```json
+{"timestamp":"2023-10-11T22:04:00.503Z","level":"WARN","message":{"a":1,"b":"xyz","my_set":{"[Set]":["foo","bar"]},"nested":{"my_arr":["elem1",{"[Map]":{"mapKey":{"prop1":1,"prop2":"2023-10-11T22:04:00.503Z"}}}]}}}
+```
 
 ## CICD
 
@@ -68,11 +87,12 @@ result:
 ## Using the template repository
 
 - Upon creating a repository from the template the CICD pipeline will fail for the `sonarcloud` step
-- You would want to first change contentsof `package.json` adding the name of your package, dependencies, etc.
-- make sure these secrets exists, have access to your repo and are valid:
-  - `PAT_TOKEN_GHA_AUTH` the token of the account to setup git for automatic version bumps and mergebacks in dev. Needs a `repo` scope
-  - `SONAR_TOKEN` - sonar cloud token. You will need a https://sonarcloud.io/ account and a corresponding project
-  - `NPM_TOKEN` - NPM token (classic). You will need a https://www.npmjs.com/ account
+- You would want to first 
+  - remove other files, change contents of `package.json`, etc.
+  - make sure these secrets exists, have access to your repo and are valid:
+    - `PAT_TOKEN_GHA_AUTH` the token of the account to setup git for automatic version bumps and mergebacks in dev. Needs a `repo` scope
+    - `SONAR_TOKEN` - sonar cloud token. You will need a https://sonarcloud.io/ account and a corresponding project
+    - `NPM_TOKEN` - NPM token (classic). You will need a https://www.npmjs.com/ account
 
 
 

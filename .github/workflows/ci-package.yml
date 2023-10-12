@@ -112,7 +112,7 @@ jobs:
         uses: 'phips28/gh-action-bump-version@master'
         with: 
           tag-prefix: 'v'
-          commit-message: ${{ steps.get-latest-commit-message.outputs.message }}
+          commit-message: 'ci:bump version to {{version}} [skip ci]\n{{ steps.get-latest-commit-message.outputs.message }}'
                                               # Using defaults from  https://github.com/phips28/gh-action-bump-version#workflow
                                               # TODO consider commitizen to bump the package version
         #   minor-wording:  'MINOR'

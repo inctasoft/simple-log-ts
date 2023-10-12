@@ -114,6 +114,7 @@ jobs:
           tag-prefix: 'v'
           commit-message: ${{ steps.get-latest-commit-message.outputs.message }}
                                               # Using defaults from  https://github.com/phips28/gh-action-bump-version#workflow
+                                              # TODO consider commitizen to bump the package version
         #   minor-wording:  'MINOR'
         #   major-wording:  'MAJOR'
         #   patch-wording:  'patch,fixes'     # Providing patch-wording will override commits
@@ -128,14 +129,6 @@ jobs:
         env:
           NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
         run: echo "new tag $NEW_TAG"
-  # create-relase:
-  #   needs: bump-version
-  #   uses: actions/create-release@v3
-  #   with:
-  #     tag: ${{ github.ref }}
-  #     release_name: ${{ github.ref }}
-  #     body: ${{ readFile('changelog.md') }}
-  #     assets: changelog.md
 
   # pulling merge comitts back in dev     
   merge-in-dev:

@@ -19,7 +19,7 @@ log.error("oops something hapened, new Error('some err msg'));
 ```
 results in:
 ```json
-{"timestamp":"2023-10-11T21:50:47.405Z","level":"ERROR","message":"oops something hapened","correlation":"undefined","[Error]":{"stack":"Error: some err msg\n    at Object......","message":"some err msg"}}```
+{"timestamp":"2023-10-11T21:50:47.405Z","level":"ERROR","message":"oops something hapened","correlation":"undefined","[Error]":{"stack":"Error: some err msg\n    at Object..(the err stack)","message":"some err msg"}}```
 ```
 - Printing complex objects, and providing `correlation_id`
 ```typescript
@@ -42,12 +42,13 @@ results in:
 {"timestamp":"2023-10-12T00:14:44.139Z","level":"DEBUG","message":{"a":1,"b":"xyz","my_set":["foo","bar"],"nested":{"my_arr":["elem1",{"mapKey":{"prop1":1,"prop2":"2023-10-12T00:14:44.139Z"}}]}},"correlation":"some_guid"}
 ```
 - If you are interested in which transformed objects were of `Map` or `Set` types, provide `printMapSetTypes: true`
+- `Error` objects are always printed as `{"[Error]": {stack:"...", message: "..."}}`
 - If you are not into using correlation_id, provide `printCorrelation: false`
 ```typescript
 import { Log } from "@inctasoft/simple-log-ts";
 
 const log = new Log({ printMapSetTypes: true, printCorrelation: false});
-log.warn({
+log.error({
     a: 1, b: 'xyz', my_set: new Set(['foo', 'bar']), nested: {
         my_arr: [
             'elem1',
@@ -56,11 +57,11 @@ log.warn({
                 prop2: new Date()
             }]])]
     }
-});
+}, new Error("oops something unexpected happened"));
 ```
 log statement:
 ```json
-{"timestamp":"2023-10-11T22:04:00.503Z","level":"WARN","message":{"a":1,"b":"xyz","my_set":{"[Set]":["foo","bar"]},"nested":{"my_arr":["elem1",{"[Map]":{"mapKey":{"prop1":1,"prop2":"2023-10-11T22:04:00.503Z"}}}]}}}
+{"timestamp":"2023-10-12T01:57:31.983Z","level":"ERROR","message":{"a":1,"b":"xyz","my_set":{"[Set]":["foo","bar"]},"nested":{"my_arr":["elem1",{"[Map]":{"mapKey":{"prop1":1,"prop2":"2023-10-12T01:57:31.983Z"}}}]}},"[Error]":{"stack":"Error: oops something unexpected happened\n    at Object..(the err stack)","message":"oops something unexpected happened"}}
 ```
 ## Log levels
 | process.env.LOGLEVEL | active methods | notes |

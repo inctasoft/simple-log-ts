@@ -9,15 +9,7 @@ Exposes a `Log` class with `debug`, `info`, `warn`, `error` and `crit` methods.
 - Logs are in JSON format, useful for parsing from log ingesting services
 - `Error`, `Map` `Set` objects are trnsformed into JSON and also printed
 
-| process.env.LOGLEVEL | active methods | notes |
-|---|---|---|
-| `DEBUG`| `debug`,`info`,`warn`,`error`,`crit`| | 
-| `INFO` | `info`,`warn`,`error`,`crit`|| 
-| `WARN` | `warn`,`error`,`crit`| default, if no `LOGLEVEL` is present |
-| `ERROR`| `error`,`crit`| Both `crit` and `error` use `console.error` and accept optional second `Error` argument |
-| `SILENT` <br/> (or any other value)| `crit` | Lets you silence all logs, if not using `crit` method(as it is always active, no matter of `LOGLEVEL` value) |
-
-Examples:
+## Examples
 - Empty config
 ```typescript
 import { Log } from "@inctasoft/simple-log-ts";
@@ -32,9 +24,9 @@ results in:
 - Printing complex objects, and providing `correlation_id`
 ```typescript
 import { Log } from "@inctasoft/simple-log-ts";
-
+process.env.LOGLEVEL = 'DEBUG' // un-silence debug method
 const log = new Log({ correlation_id: 'some_guid' });
-log.warn({
+log.debug({
     a: 1, b: 'xyz', my_set: new Set(['foo', 'bar']), nested: {
         my_arr: [
             'elem1',
@@ -47,7 +39,7 @@ log.warn({
 ```
 results in:
 ```json
-{"timestamp":"2023-10-11T21:43:13.765Z","level":"WARN","message":{"a":1,"b":"xyz","my_set":["foo","bar"],"nested":{"my_arr":["elem1",{"mapKey":{"prop1":1,"prop2":"2023-10-11T21:43:13.765Z"}}]}},"correlation":"some_guid"}
+{"timestamp":"2023-10-12T00:14:44.139Z","level":"DEBUG","message":{"a":1,"b":"xyz","my_set":["foo","bar"],"nested":{"my_arr":["elem1",{"mapKey":{"prop1":1,"prop2":"2023-10-12T00:14:44.139Z"}}]}},"correlation":"some_guid"}
 ```
 - If you are interested in which transformed objects were of `Map` or `Set` types, provide `printMapSetTypes: true`
 - If you are not into using correlation_id, provide `printCorrelation: false`
@@ -70,6 +62,14 @@ log statement:
 ```json
 {"timestamp":"2023-10-11T22:04:00.503Z","level":"WARN","message":{"a":1,"b":"xyz","my_set":{"[Set]":["foo","bar"]},"nested":{"my_arr":["elem1",{"[Map]":{"mapKey":{"prop1":1,"prop2":"2023-10-11T22:04:00.503Z"}}}]}}}
 ```
+## Log levels
+| process.env.LOGLEVEL | active methods | notes |
+|---|---|---|
+| `DEBUG`| `debug`,`info`,`warn`,`error`,`crit`| | 
+| `INFO` | `info`,`warn`,`error`,`crit`|| 
+| `WARN` | `warn`,`error`,`crit`| default, if no `LOGLEVEL` is present |
+| `ERROR`| `error`,`crit`| Both `crit` and `error` use `console.error` and accept optional second `Error` argument |
+| `SILENT` <br/> (or any other value)| `crit` | Lets you silence all logs, if not using `crit` method(as it is always active, no matter of `LOGLEVEL` value) |
 
 ## CICD
 
@@ -82,13 +82,13 @@ log statement:
   * new tag is being created with the new version
   * npm package with the new version is pushed to https://registry.npmjs.org/
   * npm package with the new version is pushed to https://npm.pkg.github.com/
-  * (TODO) `gh release` is created __!__ https://medium.com/giant-machines/releases-the-easy-way-3ec1c2c3502b
 * _pre-commit_ hooks are running tests and linting commit messages. Using `git cz` is encouraged
+* Github releases from tags _are manually created_ for editing the release notes 
 
-## Using the template repository
-
-- Upon creating a repository from the template the CICD pipeline will fail for the `sonarcloud` step
-- You would want to first 
+## This repo as template
+- Upon creating a repository from the template the Gthub Actions pipeline will fail for the `sonarcloud` step
+- You would want to first
+  - One-time execute `npm run prepare` to install git hooks
   - remove other files, change contents of `package.json`, etc.
   - make sure these secrets exists, have access to your repo and are valid:
     - `PAT_TOKEN_GHA_AUTH` the token of the account to setup git for automatic version bumps and mergebacks in dev. Needs a `repo` scope

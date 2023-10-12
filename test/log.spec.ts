@@ -2,21 +2,22 @@ import { describe, jest, expect, test, beforeEach } from '@jest/globals';
 import { Log } from '../src/log';
 
 jest.mock('console');
-console.error = jest.fn()
+const console_error = console.error = jest.fn()
 console.info = jest.fn()
 console.log = jest.fn()
 const console_warn = console.warn = jest.fn()
-const IsoDateMatcher = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/
-const logMetadataMatcher = (level: string) => ({
-    timestamp: expect.stringMatching(IsoDateMatcher),
-    "correlation": testCorrelationToken,
-    "level": level
+const dateISOStringMatcher = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/
+const logMetadataMatcher = (level: string, correlation?: string) => ({
+    timestamp: expect.stringMatching(dateISOStringMatcher),
+    level,
+    correlation: String(correlation)
 });
 
-const testLogDataString = "this is test log message";
-const testCorrelationToken = "this is correlation id";
 const env = process.env;
 
+const testString = "this is test log message";
+const testErrorMessage = "errorObject.message";
+const testCorrelationId = "this is correlation id";
 const testMap = new Map<any, any>([
     ['a', 1], ['b', new Date()],
     ['nestedMap', new Map<any, any>([
@@ -25,6 +26,7 @@ const testMap = new Map<any, any>([
 ]);
 const testObject = { prop1: testMap, prop2: [1, { nested: 2 }] };
 const testSet = new Set<any>([testMap, testObject, 'test_set_elem']);
+const testError = new Error(testErrorMessage);
 
 beforeEach(() => {
     process.env = { ...env }
@@ -33,12 +35,12 @@ describe('process.env.LOGLEVEL', () => {
 
     test.each`
     LOGLEVEL    |expectedLogMethods 
-    ${'DEBUG'}  |${['logdebug', 'loginfo', 'logwarn', 'logerror', 'logcrit']}
-    ${'INFO'}   |${['loginfo', 'logwarn', 'logerror', 'logcrit']}
-    ${'WARN'}   |${['logwarn', 'logerror', 'logcrit']}
-    ${'ERROR'}  |${['logerror', 'logcrit']}
-    ${'CRIT'}   |${['logcrit']}
-    ${'ANY_OTHER'}  |${['logcrit']} // logcrit is always enabled, even if LOGLEVEL is not part of supported values
+    ${'DEBUG'}  |${['debug', 'info', 'warn', 'error', 'crit']}
+    ${'INFO'}   |${['info', 'warn', 'error', 'crit']}
+    ${'WARN'}   |${['warn', 'error', 'crit']}
+    ${'ERROR'}  |${['error', 'crit']}
+    ${'CRIT'}   |${['crit']}
+    ${'ANY_OTHER'}  |${['crit']} // crit is always enabled, even if LOGLEVEL is not part of supported values
         `("$LOGLEVEL activates $expectedLogMethods",
         (args) => {
             const LOGLEVEL = args.LOGLEVEL as string;
@@ -46,31 +48,31 @@ describe('process.env.LOGLEVEL', () => {
 
             //ARRANGE
             process.env.LOGLEVEL = LOGLEVEL;
-            const log = new Log(testCorrelationToken)
+            const log = new Log()
 
             // ACT
-            log.debug(testLogDataString);
-            log.info(testLogDataString);
-            log.warn(testLogDataString);
-            log.error(testLogDataString);
-            log.crit(testLogDataString);
+            log.debug(testString);
+            log.info(testString);
+            log.warn(testString);
+            log.error(testString);
+            log.crit(testString);
 
-            // ASSERT logdebug
-            if ((expectedLogMethods).includes('logdebug')) {
+            // ASSERT log.debug
+            if ((expectedLogMethods).includes('debug')) {
                 expect(console.log).toBeCalledTimes(1);
             } else {
                 expect(console.log).toBeCalledTimes(0)
             }
 
-            // ASSERT loginfo
-            if ((expectedLogMethods).includes('loginfo')) {
+            // ASSERT log.info
+            if ((expectedLogMethods).includes('info')) {
                 expect(console.info).toBeCalledTimes(1);
             } else {
                 expect(console.info).toBeCalledTimes(0)
             }
 
-            // ASSERT logwarn
-            if ((expectedLogMethods).includes('logwarn')) {
+            // ASSERT log.warn
+            if ((expectedLogMethods).includes('warn')) {
                 expect(console.warn).toBeCalledTimes(1)
             } else {
                 expect(console.warn).toBeCalledTimes(0)
@@ -78,23 +80,24 @@ describe('process.env.LOGLEVEL', () => {
 
             // ASSERT how many times console.error was called, having in mind both CRIT and ERROR use it
             let expectedConsoleErrCalls = 0;
-            if (expectedLogMethods.includes('logerror')) {
+            if (expectedLogMethods.includes('error')) {
                 expectedConsoleErrCalls += 1;
             }
-            if (expectedLogMethods.includes('logcrit')) {
+            if (expectedLogMethods.includes('crit')) {
                 expectedConsoleErrCalls += 1;
             }
             expect(console.error).toBeCalledTimes(expectedConsoleErrCalls)
         });
+
     test("if LOGLEVEL is undefined, default level is WARN", () => {
         process.env.LOGLEVEL = undefined
         const log = new Log();
 
-        log.debug(testLogDataString)
-        log.info(testLogDataString)
-        log.warn(testLogDataString)
-        log.error(testLogDataString)
-        log.crit(testLogDataString)
+        log.debug(testString)
+        log.info(testString)
+        log.warn(testString)
+        log.error(testString)
+        log.crit(testString)
 
         expect(console.info).toBeCalledTimes(0)
         expect(console.log).toBeCalledTimes(0)
@@ -103,28 +106,11 @@ describe('process.env.LOGLEVEL', () => {
     });
 });
 
-describe('setting correlation id', () => {
-    test('by passing plain string', () => {
-        const log = new Log(testCorrelationToken)
-        expect(log.correlation_id).toBe(testCorrelationToken);
-    });
-
-    test('by passing object contining `correlation_id: sting`', () => {
-        const log = new Log({ correlation_id: testCorrelationToken, someOtherProp: 'will not be used' })
-        expect(log.correlation_id).toBe(testCorrelationToken);
-    });
-
-    test("if correlation_id is not provided, 'UNKNOWN' is used", () => {
-        const log = new Log() // no correlation_id provided
-        expect(log.correlation_id).toBe('UNKNOWN');
-    });
-});
-
-describe('objects logging depending on printTypes flag', () => {
-    describe('(default) when config.printTypes = false', () => {
+describe('Log stetements depending on config', () => {
+    describe('(default) when config.printMapSetTypes = false', () => {
         const expectTransformed_testMap = {
             "a": 1,
-            "b": expect.stringMatching(IsoDateMatcher),
+            "b": expect.stringMatching(dateISOStringMatcher),
             "nestedMap": {
                 "c": 3,
                 "nestedSet": [1, {
@@ -142,61 +128,68 @@ describe('objects logging depending on printTypes flag', () => {
         };
         const expectTranformed_testSet = [expectTransformed_testMap, expectTranformed_testObject, 'test_set_elem'];
 
-        test('Date', () => {
-            const expectedJsonLogged = {
-                ...logMetadataMatcher("WARN"),
-                message: expect.stringMatching(IsoDateMatcher)
-            };
-            const log = new Log(testCorrelationToken)
-            log.warn(new Date());
-            const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
-            expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
-        });
-
-        test('Map', () => {
+        test('Does not wrap Map types with [Map]', () => {
             const expected = {
                 ...logMetadataMatcher("WARN"),
                 message: expectTransformed_testMap
             };
-            const log = new Log(testCorrelationToken)
+            const log = new Log()
             log.warn(testMap);
             const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
             expect(actualCallArgumentsValidJson).toEqual(expected);
         });
 
-        test('Object', () => {
+        test('Object and Array type is never printed as it is obvious', () => {
 
             const expectedJsonLogged = {
                 ...logMetadataMatcher("WARN"),
                 message: expectTranformed_testObject
             };
 
-            const log = new Log(testCorrelationToken)
+            const log = new Log()
             log.warn(testObject);
 
             const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
             expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
         });
 
-        test('Set', () => {
+        test('Error type is always wrapped with [Error]', () => {
+
+            const expectedJsonLogged = {
+                ...logMetadataMatcher("ERROR"),
+                message: testString,
+                "[Error]": {
+                    message: testErrorMessage,
+                    stack: expect.stringContaining('Error:')
+                }
+
+            };
+
+            const log = new Log()
+            log.error(testString, testError);
+
+            const actualCallArgumentsValidJson = JSON.parse(String(console_error.mock.calls[0][0]));
+            expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
+        });
+
+
+        test('Does not wrap Set types with [Set]', () => {
             const expectedJsonLogged = {
                 ...logMetadataMatcher("WARN"),
                 message: expectTranformed_testSet
             };
-            const log = new Log(testCorrelationToken)
+            const log = new Log()
             log.warn(testSet);
             const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
             expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
         });
     });
 
-    describe('when config.printTypes = true', () => {
+    describe('when config.printMapSetTypes = true', () => {
         const expectTransformed_testMap = {
             "[Map]": {
                 "a": 1,
-                "b": {
-                    "[Date]": expect.stringMatching(IsoDateMatcher),
-                },
+                "b": expect.stringMatching(dateISOStringMatcher),
                 "nestedMap": {
                     "[Map]": {
                         "c": 3,
@@ -220,62 +213,70 @@ describe('objects logging depending on printTypes flag', () => {
             }
         };
         const expectTranformed_testObject = {
-            "[Object]": {
-                prop1: expectTransformed_testMap,
-                prop2: {
-                    "[Array]": [1, { "[Object]": { nested: 2 } }]
-                }
-            }
+            prop1: expectTransformed_testMap,
+            prop2: [1, { nested: 2 }]
         };
         const expectTranformed_testSet = {
             "[Set]": [expectTransformed_testMap, expectTranformed_testObject, 'test_set_elem']
         };
 
-        test('Date', () => {
-            const expectedJsonLogged = {
-                ...logMetadataMatcher("WARN"),
-                message: { "[Date]": expect.stringMatching(IsoDateMatcher) }
-            };
-
-            const log = new Log({ correlation_id: testCorrelationToken, printTypes: true });
-            log.warn(new Date());
-
-            const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
-            expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
-        });
-
-        test('Map', () => {
+        test('Wraps Map types with [Map]', () => {
             const expected = {
                 ...logMetadataMatcher("WARN"),
                 message: expectTransformed_testMap
             };
-            const log = new Log({ correlation_id: testCorrelationToken, printTypes: true });
+            const log = new Log({ printMapSetTypes: true });
             log.warn(testMap);
             const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
             expect(actualCallArgumentsValidJson).toEqual(expected);
         });
 
-        test('Object', () => {
-
-            const expectedJsonLogged = {
-                ...logMetadataMatcher("WARN"),
-                message: expectTranformed_testObject
-            };
-
-            const log = new Log({ correlation_id: testCorrelationToken, printTypes: true });
-            log.warn(testObject);
-
-            const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
-            expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
-        });
-
-        test('Set', () => {
+        test('Wraps Set types with [Set]', () => {
             const expectedJsonLogged = {
                 ...logMetadataMatcher("WARN"),
                 message: expectTranformed_testSet
             };
-            const log = new Log({ correlation_id: testCorrelationToken, printTypes: true });
+            const log = new Log({ printMapSetTypes: true });
             log.warn(testSet);
+            const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
+            expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
+        });
+    });
+    describe('correlation', () => {
+        it('(default) prints correlation if not provided printCorrelation: false', () => {
+            const expectedJsonLogged = {
+                ...logMetadataMatcher("WARN", testCorrelationId),
+                message: testString
+            };
+
+            const log = new Log({ correlation_id: testCorrelationId });
+            log.warn(testString);
+
+            const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
+            expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
+        });
+        it('(default) prints correlation:\'undefined\' if not provided correlation_id and printCorrelation: false', () => {
+            const expectedJsonLogged = {
+                ...logMetadataMatcher("WARN"),
+                message: testString
+            };
+
+            const log = new Log();
+            log.warn(testString);
+
+            const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
+            expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
+        });
+        it('Does not print correlation if provided printCorrelation: false', () => {
+            const expectedJsonLogged = {
+                timestamp: expect.stringMatching(dateISOStringMatcher),
+                level: "WARN",
+                message: testString
+            };
+
+            const log = new Log({ printCorrelation: false });
+            log.warn(testString);
+
             const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
             expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
         });

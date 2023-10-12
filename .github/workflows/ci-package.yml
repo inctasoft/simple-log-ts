@@ -102,12 +102,17 @@ jobs:
           token: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
       - name: 'cat package.json'
         run: cat ./package.json
+      - name: Get latest commit message
+        id: get-latest-commit-message
+        run: |
+          MSG=$(git log --pretty=format:%B -1 HEAD)
+          echo "::set-output name=message::$MSG"
       - name: 'Automated Version Bump'
         id: version-bump
         uses: 'phips28/gh-action-bump-version@master'
         with: 
           tag-prefix: 'v'
-          commit-message: 'CI: bumps version to {{version}} [skip ci]'
+          commit-message: ${{ steps.get-latest-commit-message.outputs.message }}
                                               # Using defaults from  https://github.com/phips28/gh-action-bump-version#workflow
         #   minor-wording:  'MINOR'
         #   major-wording:  'MAJOR'

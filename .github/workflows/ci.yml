@@ -13,7 +13,7 @@ jobs:
       matrix:
         node-version: [18.x]
     steps:
-    - uses: 'inctasoft/nodejs-build'
+    - uses: 'inctasoft/nodejs-build@dev'
     # - uses: actions/checkout@v4
     #   with:
     #     fetch-depth: 0

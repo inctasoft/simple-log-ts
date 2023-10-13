@@ -7,9 +7,8 @@ on:
     branches: [ "dev", "main", "release/**", "hotfix/**" ]
 
 jobs:
-  workflow:
-    uses: inctasoft/simple-log-ts/.github/workflows/actions/nodejs-build.yml@dev  
-    secrets: inherit    
+  build: 
+    uses: inctasoft/simple-log-ts/.github/workflows/actions/nodejs-build.yml@dev
   sonar-scan:
     runs-on: ubuntu-latest
     steps:

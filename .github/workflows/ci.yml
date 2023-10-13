@@ -7,24 +7,12 @@ on:
     branches: [ "dev", "main", "release/**", "hotfix/**" ]
 
 jobs:
-  build:
+  workflow:
+    uses: inctasoft/simple-log-ts/.github/workflows/actions/nodejs-build.yml@dev  
+    secrets: inherit    
+  sonar-scan:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x]
     steps:
-    - uses: inctasoft/simple-log-ts/.github/workflows/actions/nodejs-build.yml@dev
-    # - uses: actions/checkout@v4
-    #   with:
-    #     fetch-depth: 0
-    # - name: Use Node.js ${{ matrix.node-version }}
-    #   uses: actions/setup-node@v3
-    #   with:
-    #     node-version: ${{ matrix.node-version }}
-    #     cache: 'npm'
-    # - run: npm ci
-    # - run: npm run build
-    # - run: npm test
     - uses: sonarsource/sonarcloud-github-action@master
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

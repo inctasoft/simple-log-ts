@@ -11,7 +11,22 @@ jobs:
     uses: ./.github/workflows/nodejs-build.yml
   sonar-scan:
     needs: build
-    uses: ./.github/workflows/sonar-scan.yml
+    runs-on: ubuntu-latest
+    steps:
+    - uses: sonarsource/sonarcloud-github-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        args:
+          # Unique keys of your project and organization. You can find them in SonarCloud > Information (bottom-left menu)
+          # mandatory
+          -Dsonar.projectKey=inctasoft_simple-log-ts
+          -Dsonar.organization=inctasoft
+          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+          -Dsonar.typescript.tsconfigPaths=tsconfig.json
+          -Dsonar.sources=src
+          -Dsonar.tests=test
   bump-version:
     if: ${{ github.ref_name == 'main' && github.event_name == 'push'}}
     needs: build
@@ -20,14 +35,16 @@ jobs:
       contents: write
     name: 'if main branch: Bump Version'
     uses: ./.github/workflows/bump-version.yml
-  merge-in-dev-after-bump-version:
-    if: ${{ github.ref_name != 'dev' && github.event_name == 'push' }}
+  merge-in-dev-after-version-bump:
+    name: 'pull new version in dev'
+    if: ${{  github.ref_name == 'main' && github.event_name == 'push' }}
     needs: [build,bump-version]
     permissions:
       pull-requests: write
     uses: ./.github/workflows/merge-in-dev.yml
   merge-in-dev:
-    if: ${{ github.ref_name != 'dev' && github.event_name == 'push' }}
+    name: 'pull ${{github.ref_name}} in dev'
+    if: ${{ github.ref_name != 'dev'  && github.ref_name != 'main' && github.event_name == 'push' }}
     needs: build
     permissions:
       pull-requests: write

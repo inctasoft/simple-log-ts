@@ -15,6 +15,9 @@ jobs:
   bump-version:
     if: ${{ github.ref_name == 'main' && github.event_name == 'push'}}
     needs: build
+    permissions:
+      packages: write
+      contents: write
     name: 'if main branch: Bump Version'
     uses: ./.github/workflows/bump-version.yml
   merge-in-dev-after-bump-version:

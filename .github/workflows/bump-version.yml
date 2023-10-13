@@ -7,9 +7,6 @@ jobs:
   # bump version only if pushing to main branch
   bump-version:
     runs-on: ubuntu-latest
-    permissions:
-        packages: write
-        contents: write
     steps:
       - name: 'Checkout source code'
         uses: 'actions/checkout@v4'

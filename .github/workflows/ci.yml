@@ -11,6 +11,7 @@ jobs:
     uses: ./.github/workflows/nodejs-build.yml
   sonar-scan:
     runs-on: ubuntu-latest
+    needs: build
     steps:
     - uses: sonarsource/sonarcloud-github-action@master
       env:
@@ -27,61 +28,17 @@ jobs:
           -Dsonar.sources=src
           -Dsonar.tests=test
   # pulling merge comitts back in dev     
-  merge-in-dev:
+  merge-in-dev-after-bump-version:
     if: ${{ github.ref_name != 'dev' && github.event_name == 'push' }}
     needs: [build,bump-version]
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-    steps:
-    - uses: actions/checkout@v4
-    - name: merge-in-dev
-      run: |
-        echo gh event is ${{ github.event_name}}
-        gh pr create  --title "CI: automerge dev <- ${{github.ref_name}} [skip ci]" --body "CI: Automatic PR bringing commits in ${{github.ref_name}} to dev [skip ci]" --base dev 
-        gh pr merge --admin --merge
-      env:
-        GH_TOKEN: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
+    uses: ./.github/workflows/merge-in-dev
+  merge-in-dev:
+    if: ${{ github.ref_name != 'dev' && github.event_name == 'push' }}
+    needs: [build]
+    uses: ./.github/workflows/merge-in-dev
   # bump version only if pushing to main branch
   bump-version:
     if: ${{ github.ref_name == 'main' && github.event_name == 'push'}}
     needs: build
     name: 'if main branch: Bump Version'
-    runs-on: ubuntu-latest
-    permissions:
-        packages: write
-        contents: write
-    steps:
-      - name: 'Checkout source code'
-        uses: 'actions/checkout@v4'
-        with:  
-          token: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
-      - name: 'cat package.json'
-        run: cat ./package.json
-      - name: Get latest commit message
-        id: get-latest-commit-message
-        run: |
-          MSG=$(git log --pretty=format:%B -1 HEAD)
-          echo "::set-output name=message::$MSG"
-      - name: 'Automated Version Bump'
-        id: version-bump
-        uses: 'phips28/gh-action-bump-version@master'
-        with: 
-          tag-prefix: 'v'
-          commit-message: '[skip ci]:version bump to {{version}}:${{ steps.get-latest-commit-message.outputs.message }}'
-                                              # Using defaults from  https://github.com/phips28/gh-action-bump-version#workflow
-                                              # TODO consider commitizen to bump the package version
-        #   minor-wording:  'MINOR'
-        #   major-wording:  'MAJOR'
-        #   patch-wording:  'patch,fixes'     # Providing patch-wording will override commits
-        #                                     # defaulting to a patch bump.
-        #   rc-wording:     'RELEASE,alpha'
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
-          GITHUB_USER: akrsmv
-      - name: 'cat package.json'
-        run: cat ./package.json
-      - name: 'Output Step'
-        env:
-          NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
-        run: echo "new tag $NEW_TAG"
+    uses: ./.github/workflows/bump-version

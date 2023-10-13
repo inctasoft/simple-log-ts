@@ -1,35 +1,55 @@
 import { expect, test } from '@jest/globals';
-import { transform, transformArray, transformError, transformMap, transformObject, transformSet } from '../src/transform';
-import * as transformModule from '../src/transform';
+import { Transform } from '../src/transform';
 
-describe('transform', () => {
-    test('unsupported types are transformed by transformObject', () => {
-        const transformObjectSpy = jest.spyOn(transformModule, 'transformObject');
-        transform(Buffer.from('some string'), false);
-        expect(transformObjectSpy).toBeCalledTimes(1);
-    });
+const tDefault = new Transform();
+const tPrintingTypes = new Transform({ printMapSetTypes: true });
+
+test('unsupported types are transformed by transformObject', () => {
+    const t = new Transform();
+    const transformObjectSpy = jest.spyOn(t, 'obj');
+    t.transform(Buffer.from('some string'));
+    expect(transformObjectSpy).toBeCalledTimes(1);
 });
 
-test('transformMap', () => {
-    expect(transformMap(new Map([['a', 1]]), false)).toEqual({ a: 1 });
-    expect(transformMap(new Map([['a', 1]]), true)).toEqual({ "[Map]": { a: 1 } });
+it('Does not handle circular reference', () => {
+    const a: any = { a: 1 }
+    Object.assign(a, { b: a });
+    expect(() => tDefault.transform(a)).toThrow("Maximum call stack size exceeded");
 });
 
-test('transformArray', () => {
-    expect(transformArray(['a'], false)).toEqual(['a']);
-    expect(transformArray(['a', new Map([['b', 2]])], true)).toEqual(['a', { "[Map]": { b: 2 } }]);
+test('transforms Date to ISOString', () => {
+    const testDate = new Date();
+    expect(tDefault.transform(testDate)).toEqual(testDate.toISOString());
+    expect(tPrintingTypes.transform(testDate)).toEqual(testDate.toISOString());
 });
 
-test('transformSet', () => {
-    expect(transformSet(new Set(['a', new Map([['b', 2]])]), false)).toEqual(['a', { b: 2 }]);
-    expect(transformSet(new Set(['a', new Map([['b', 2]])]), true)).toEqual({ "[Set]": ['a', { "[Map]": { b: 2 } }] });
+test('map', () => {
+    expect(tDefault.map(new Map([['a', 1]]))).toEqual({ a: 1 });
+    expect(tPrintingTypes.map(new Map([['a', 1]]))).toEqual({ "[Map]": { a: 1 } });
 });
 
-test('transformObject', () => {
-    expect(transformObject({ a: 1, b: new Set(['b', 'c']) }, false)).toEqual({ a: 1, b: ['b', 'c'] });
-    expect(transformObject({ a: 1, b: new Set(['b', 'c']) }, true)).toEqual({ a: 1, b: { "[Set]": ['b', 'c'] } });
+test('array', () => {
+    expect(tDefault.arr(['a'])).toEqual(['a']);
+    expect(tPrintingTypes.arr(['a', new Map([['b', 2]])])).toEqual(['a', { "[Map]": { b: 2 } }]);
 });
 
-test('transformError', () => {
-    expect(transformError(new Error('error message'))).toEqual({ "[Error]": { message: "error message", stack: expect.stringContaining("Error:") } });
+test('set', () => {
+    expect(tDefault.set(new Set(['a', new Map([['b', 2]])]))).toEqual(['a', { b: 2 }]);
+    expect(tPrintingTypes.set(new Set(['a', new Map([['b', 2]])]))).toEqual({ "[Set]": ['a', { "[Map]": { b: 2 } }] });
 });
+
+test('obj', () => {
+    expect(tDefault.obj({ a: 1, b: new Set(['b', 'c']) })).toEqual({ a: 1, b: ['b', 'c'] });
+    expect(tPrintingTypes.obj({ a: 1, b: new Set(['b', 'c']) })).toEqual({ a: 1, b: { "[Set]": ['b', 'c'] } });
+});
+
+test('err', () => {
+    const testErrorMsg = "error message";
+    const expected = { "[Error]": { message: testErrorMsg, stack: expect.stringContaining("Error:") } }
+    // despite config, errors are printed the same
+    expect(tDefault.err(new Error('error message'))).toEqual(expected);
+    expect(tPrintingTypes.err(new Error('error message'))).toEqual(expected);
+    expect(tDefault.transform(new Error('error message'))).toEqual(expected);
+    expect(tPrintingTypes.transform(new Error('error message'))).toEqual(expected);
+});
+

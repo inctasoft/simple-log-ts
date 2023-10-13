@@ -1,48 +1,45 @@
-import { formatWithOptions } from "util";
-import { transform } from "./transform";
+import { formatWithOptions, inspect } from "util";
+import { TransformConfig, Transform } from "./transform";
 
 const logLevels = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRIT'];
 
 export type LogConfig = {
-    correlation_id: string,
-    printMapSetTypes: boolean,
-    printCorrelation: boolean,
-    [x: string]: unknown
+    correlation_id?: string,
+    printCorrelation?: boolean
 }
 export class Log {
-    public get config() {
-        return this._config;
-    }
+    private _config: LogConfig
+    private _transformator: Transform
+
     public debug = (data: any) => this.logIfLevelInRange('DEBUG', console.log, data);
     public info = (data: any) => this.logIfLevelInRange('INFO', console.info, data);
     public warn = (data: any) => this.logIfLevelInRange('WARN', console.warn, data);
     public error = (data: any, error?: Error) => this.logIfLevelInRange('ERROR', console.error, data, error);
     public crit = (data: any, error?: Error) => this.logIfLevelInRange('CRIT', console.error, data, error);
 
-    private _config: LogConfig;
     private allowedLogLevels = (logLevel: string | undefined) => logLevels.slice(logLevels.indexOf(logLevel ?? 'WARN'))
 
-    constructor(config?: Partial<LogConfig>) {
+    constructor(config?: Partial<TransformConfig & LogConfig & { [x: string]: unknown }>) {
         this._config = {
             correlation_id: String(config?.correlation_id),
-            printMapSetTypes: config?.printMapSetTypes ?? false,
             printCorrelation: config?.printCorrelation ?? true
         }
+        this._transformator = new Transform({ printMapSetTypes: config?.printMapSetTypes ?? false });
     }
 
     private logIfLevelInRange(loglevel: string, logFn: Function, data: any, error?: Error) {
         if (this.allowedLogLevels(process.env.LOGLEVEL).includes(loglevel)) {
+            const incpectResult = inspect(data);
             const logData = {
                 timestamp: new Date().toISOString(),
                 level: loglevel,
-                message: transform(data, this._config.printMapSetTypes)
+                message: /\[Circular\s\*\d+\]/.test(incpectResult) ? incpectResult : this._transformator.transform(data)
             };
-            if (this.config.printCorrelation) {
+            if (this._config.printCorrelation) {
                 Object.assign(logData, { correlation: this._config.correlation_id })
             }
             if (error) {
-                const t = transform(error, true);
-                Object.assign(logData, t);
+                Object.assign(logData, this._transformator.err(error));
             }
             logFn(formatWithOptions({ colors: true, depth: 10, showHidden: false }, '%j', logData));
         }

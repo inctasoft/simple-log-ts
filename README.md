@@ -81,10 +81,11 @@ log statement:
     * see https://github.com/phips28/gh-action-bump-version#workflow on commit messages
     * (version bump commit will be automerged in `dev` from _2._)
   * new tag is being created with the new version
+
+* _pre-commit_ hooks are running tests and linting commit messages. Using `git cz` is encouraged
+* Once a Github release from tag _is manually created_ 
   * npm package with the new version is pushed to https://registry.npmjs.org/
   * npm package with the new version is pushed to https://npm.pkg.github.com/
-* _pre-commit_ hooks are running tests and linting commit messages. Using `git cz` is encouraged
-* Github releases from tags _are manually created_ for editing the release notes 
 
 ## This repo as template
 - Upon creating a repository from the template the Gthub Actions pipeline will fail for the `sonarcloud` step

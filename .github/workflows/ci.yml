@@ -10,35 +10,22 @@ jobs:
   build: 
     uses: ./.github/workflows/nodejs-build.yml
   sonar-scan:
-    runs-on: ubuntu-latest
     needs: build
-    steps:
-    - uses: sonarsource/sonarcloud-github-action@master
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        args:
-          # Unique keys of your project and organization. You can find them in SonarCloud > Information (bottom-left menu)
-          # mandatory
-          -Dsonar.projectKey=inctasoft_simple-log-ts
-          -Dsonar.organization=inctasoft
-          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-          -Dsonar.typescript.tsconfigPaths=tsconfig.json
-          -Dsonar.sources=src
-          -Dsonar.tests=test
-  # pulling merge comitts back in dev     
-  merge-in-dev-after-bump-version:
-    if: ${{ github.ref_name != 'dev' && github.event_name == 'push' }}
-    needs: [build,bump-version]
-    uses: ./.github/workflows/merge-in-dev.yml
-  merge-in-dev:
-    if: ${{ github.ref_name != 'dev' && github.event_name == 'push' }}
-    needs: [build]
-    uses: ./.github/workflows/merge-in-dev.yml
-  # bump version only if pushing to main branch
+    uses: ./.github/workflows/sonar-scan.yml
   bump-version:
     if: ${{ github.ref_name == 'main' && github.event_name == 'push'}}
     needs: build
     name: 'if main branch: Bump Version'
     uses: ./.github/workflows/bump-version.yml
+  merge-in-dev-after-bump-version:
+    if: ${{ github.ref_name != 'dev' && github.event_name == 'push' }}
+    needs: [build,bump-version]
+    permissions:
+      pull-requests: write
+    uses: ./.github/workflows/merge-in-dev.yml
+  merge-in-dev:
+    if: ${{ github.ref_name != 'dev' && github.event_name == 'push' }}
+    needs: build
+    permissions:
+      pull-requests: write
+    uses: ./.github/workflows/merge-in-dev.yml

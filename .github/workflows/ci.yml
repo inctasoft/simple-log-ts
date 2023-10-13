@@ -8,7 +8,7 @@ on:
 
 jobs:
   build: 
-    uses: inctasoft/simple-log-ts/.github/workflows/nodejs-build.yml@dev
+    uses: inctasoft/simple-log-ts/.github/actions/nodejs-build.yml@dev
   sonar-scan:
     runs-on: ubuntu-latest
     steps:

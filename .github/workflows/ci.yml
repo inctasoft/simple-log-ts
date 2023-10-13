@@ -31,14 +31,14 @@ jobs:
   merge-in-dev-after-bump-version:
     if: ${{ github.ref_name != 'dev' && github.event_name == 'push' }}
     needs: [build,bump-version]
-    uses: ./.github/workflows/merge-in-dev
+    uses: ./.github/workflows/merge-in-dev.yml
   merge-in-dev:
     if: ${{ github.ref_name != 'dev' && github.event_name == 'push' }}
     needs: [build]
-    uses: ./.github/workflows/merge-in-dev
+    uses: ./.github/workflows/merge-in-dev.yml
   # bump version only if pushing to main branch
   bump-version:
     if: ${{ github.ref_name == 'main' && github.event_name == 'push'}}
     needs: build
     name: 'if main branch: Bump Version'
-    uses: ./.github/workflows/bump-version
+    uses: ./.github/workflows/bump-version.yml

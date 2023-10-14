@@ -16,3 +16,4 @@ jobs:
     permissions:
       pull-requests: write
     uses: ./.github/workflows/step-merge-in-dev.yml
+    secrets: inherit

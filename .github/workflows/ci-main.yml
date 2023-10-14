@@ -29,13 +29,14 @@ jobs:
           -Dsonar.sources=./src
           -Dsonar.tests=./test
   bump-version:
-    name: if main branch bump version
+    name: 'push to main: bump version'
     if: ${{ github.ref_name == 'main' && github.event_name == 'push'}}
     needs: build
     permissions:
       packages: write
       contents: write
     uses: ./.github/workflows/step-bump-version.yml
+    secrets: inherit
   merge-in-dev:
     if: ${{  github.ref_name == 'main' && github.event_name == 'push' }}
     name: 'pull in dev branch'
@@ -43,4 +44,5 @@ jobs:
     permissions:
       pull-requests: write
     uses: ./.github/workflows/step-merge-in-dev.yml
+    secrets: inherit
 

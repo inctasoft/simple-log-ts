@@ -6,12 +6,10 @@ npm install @inctasoft/simple-log-ts
 ```
 
 A `Log` class with `debug`, `info`, `warn`, `error` and `crit` methods.
-- Logs are in JSON format, useful for parsing from log ingesting services
-- In case of circular references, output is still JSON, but the message property will contain a string with the value of `util.inspect(data)`
-- `inspectOptions` config is only used in case of circular references found. It defults to: `{}`, but can be overwritten by providing `inspectOptions` to the `Log` constructor
-- Optional `correlation_id` can be passed to constructor, which is always logged
+- JSON format, useful for log ingesting services
 - `Error`, `Map` `Set` objects are trnsformed into JSON and also printed
-- After trasformations of input data, applied is: `format(inspectOptions, '%j', logData);` 
+- In case of circular references, output is still JSON, but the message property will contain a string with the value of `util.inspect(data, ...inspectOptions)`. `inspectOptions` by default is `{}` but can be overwritten in Log's constructor
+- Optional `correlation_id` can be passed to constructor, which is always logged. Pass `printCorrelation: false` in Log's constructor to skip it.
 
 ## Usage
 - Empty config

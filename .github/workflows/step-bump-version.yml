@@ -2,6 +2,9 @@ name: Bump Package Version
 
 on:
   workflow_call: 
+    secrets:
+      PAT_TOKEN_GHA_AUTH:
+        required: true
 
 jobs:
   # bump version only if pushing to main branch

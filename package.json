@@ -3,6 +3,7 @@
   "version": "4.1.2",
   "description": "support for loglevels and correlation_id",
   "main": "dist/src/log.js",
+  "files": ["./dist"],
   "scripts": {
     "prepare": "husky install",
     "test": "jest",

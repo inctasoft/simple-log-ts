@@ -5,12 +5,8 @@ on:
       types: [published]
 
 jobs:
-  build: 
-    uses: ./.github/workflows/step-build.yml
-
   # publishing to github only if pushing to main branch
   publish-gpr:
-    needs: [build]
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -30,7 +26,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
   publish-npm:
-    needs: [build]
     runs-on: ubuntu-latest
     permissions:
       packages: write

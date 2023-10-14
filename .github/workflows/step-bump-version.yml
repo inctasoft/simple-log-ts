@@ -19,7 +19,8 @@ jobs:
         run: cat ./package.json
       - name: Get latest commit message
         id: get-latest-commit-message
-        run: echo "LAST_COMMIT=$(git log --pretty=format:%B -1 HEAD)" >> $GITHUB_OUTPUT
+        run: echo "LAST_COMMIT=some" >> $GITHUB_OUTPUT
+        # $(git log --pretty=format:%B -1 HEAD)
         # ^ using the new $GITHUB_OUTPUT instead of `echo "::set-output name=message::$MSG"`
       - name: 'Automated Version Bump'
         id: version-bump

@@ -1,5 +1,6 @@
 import { describe, jest, expect, test, beforeEach } from '@jest/globals';
 import { Log } from '../src/log';
+import { inspect } from 'util';
 
 jest.mock('console');
 const console_error = console.error = jest.fn()
@@ -104,6 +105,59 @@ describe('process.env.LOGLEVEL', () => {
         expect(console.warn).toBeCalledTimes(1)
         expect(console.error).toBeCalledTimes(2) //1 for error, 1 for crit
     });
+});
+describe('correlation', () => {
+    it('(default) prints correlation if not provided `printCorrelation: false`', () => {
+        const expectedJsonLogged = {
+            ...logMetadataMatcher("WARN", testCorrelationId),
+            message: testString
+        };
+
+        const log = new Log({ correlation_id: testCorrelationId });
+        log.warn(testString);
+
+        const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
+        expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
+    });
+    it('(default) prints correlation:\'undefined\' if not provided correlation_id', () => {
+        const expectedJsonLogged = {
+            ...logMetadataMatcher("WARN"),
+            message: testString
+        };
+
+        const log = new Log();
+        log.warn(testString);
+
+        const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
+        expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
+    });
+    it('Does not print correlation if provided printCorrelation: false', () => {
+        const expectedJsonLogged = {
+            timestamp: expect.stringMatching(dateISOStringMatcher),
+            level: "WARN",
+            message: testString
+        };
+
+        const log = new Log({ printCorrelation: false });
+        log.warn(testString);
+
+        const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
+        expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
+    });
+});
+it('handles circular references', () => {
+    const a: any = { a: 1 }
+    Object.assign(a, { b: a });
+    const log = new Log();
+    expect(() => log.warn(a)).not.toThrow();
+
+    const expectedJsonLogged = {
+        ...logMetadataMatcher("WARN"),
+        message: inspect(a)
+    };
+
+    const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
+    expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
 });
 
 describe('Log stetements depending on config', () => {
@@ -238,45 +292,6 @@ describe('Log stetements depending on config', () => {
             };
             const log = new Log({ printMapSetTypes: true });
             log.warn(testSet);
-            const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
-            expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
-        });
-    });
-    describe('correlation', () => {
-        it('(default) prints correlation if not provided printCorrelation: false', () => {
-            const expectedJsonLogged = {
-                ...logMetadataMatcher("WARN", testCorrelationId),
-                message: testString
-            };
-
-            const log = new Log({ correlation_id: testCorrelationId });
-            log.warn(testString);
-
-            const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
-            expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
-        });
-        it('(default) prints correlation:\'undefined\' if not provided correlation_id and printCorrelation: false', () => {
-            const expectedJsonLogged = {
-                ...logMetadataMatcher("WARN"),
-                message: testString
-            };
-
-            const log = new Log();
-            log.warn(testString);
-
-            const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
-            expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
-        });
-        it('Does not print correlation if provided printCorrelation: false', () => {
-            const expectedJsonLogged = {
-                timestamp: expect.stringMatching(dateISOStringMatcher),
-                level: "WARN",
-                message: testString
-            };
-
-            const log = new Log({ printCorrelation: false });
-            log.warn(testString);
-
             const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
             expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
         });

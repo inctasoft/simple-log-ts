@@ -1,35 +1,72 @@
 import { expect, test } from '@jest/globals';
-import { transform, transformArray, transformError, transformMap, transformObject, transformSet } from '../src/transform';
-import * as transformModule from '../src/transform';
+import { Transform, inddexedClass } from '../src/transform';
+import { inspect } from 'util';
+import { doesNotMatch } from 'assert';
 
-describe('transform', () => {
-    test('unsupported types are transformed by transformObject', () => {
-        const transformObjectSpy = jest.spyOn(transformModule, 'transformObject');
-        transform(Buffer.from('some string'), false);
-        expect(transformObjectSpy).toBeCalledTimes(1);
-    });
+const tDefault = new Transform() as Transform & inddexedClass;
+const tPrintingTypes = new Transform({ printMapSetTypes: true }) as Transform & inddexedClass;
+
+test('unsupported types are transformed by transformObject', () => {
+    const t = new Transform();
+    const transformObjectSpy = jest.spyOn(t, 'obj');
+    t.transform(Buffer.from('some string'));
+    expect(transformObjectSpy).toBeCalledTimes(1);
 });
 
-test('transformMap', () => {
-    expect(transformMap(new Map([['a', 1]]), false)).toEqual({ a: 1 });
-    expect(transformMap(new Map([['a', 1]]), true)).toEqual({ "[Map]": { a: 1 } });
+
+test('transforms Date to ISOString', () => {
+    const testDate = new Date();
+    expect(tDefault.transform(testDate)).toEqual(testDate.toISOString());
+    expect(tPrintingTypes.transform(testDate)).toEqual(testDate.toISOString());
 });
 
-test('transformArray', () => {
-    expect(transformArray(['a'], false)).toEqual(['a']);
-    expect(transformArray(['a', new Map([['b', 2]])], true)).toEqual(['a', { "[Map]": { b: 2 } }]);
+test('map', () => {
+    const a = new Map<any, any>([['a', 1]])
+    a.set('b', a);
+    expect(tDefault.map(a)).toEqual(inspect(a));
+    expect(tPrintingTypes.map(a)).toEqual(inspect(a));
 });
 
-test('transformSet', () => {
-    expect(transformSet(new Set(['a', new Map([['b', 2]])]), false)).toEqual(['a', { b: 2 }]);
-    expect(transformSet(new Set(['a', new Map([['b', 2]])]), true)).toEqual({ "[Set]": ['a', { "[Map]": { b: 2 } }] });
+test('arr', () => {
+    expect(tDefault.arr(['a'])).toEqual(['a']);
+    expect(tPrintingTypes.arr(['a', new Map([['b', 2]])])).toEqual(['a', { "[Map]": { b: 2 } }]);
 });
 
-test('transformObject', () => {
-    expect(transformObject({ a: 1, b: new Set(['b', 'c']) }, false)).toEqual({ a: 1, b: ['b', 'c'] });
-    expect(transformObject({ a: 1, b: new Set(['b', 'c']) }, true)).toEqual({ a: 1, b: { "[Set]": ['b', 'c'] } });
+test('set', () => {
+    expect(tDefault.set(new Set(['a', new Map([['b', 2]])]))).toEqual(['a', { b: 2 }]);
+    expect(tPrintingTypes.set(new Set(['a', new Map([['b', 2]])]))).toEqual({ "[Set]": ['a', { "[Map]": { b: 2 } }] });
 });
 
-test('transformError', () => {
-    expect(transformError(new Error('error message'))).toEqual({ "[Error]": { message: "error message", stack: expect.stringContaining("Error:") } });
+test('obj', () => {
+    expect(tDefault.obj({ a: 1, b: new Set(['b', 'c']) })).toEqual({ a: 1, b: ['b', 'c'] });
+    expect(tPrintingTypes.obj({ a: 1, b: new Set(['b', 'c']) })).toEqual({ a: 1, b: { "[Set]": ['b', 'c'] } });
 });
+
+
+test('err', () => {
+    const testErrorMsg = "error message";
+    const expected = { "[Error]": { message: testErrorMsg, stack: expect.stringContaining("Error:") } }
+    // despite config, errors are printed the same
+    expect(tDefault.err(new Error('error message'))).toEqual(expected);
+    expect(tPrintingTypes.err(new Error('error message'))).toEqual(expected);
+    expect(tDefault.transform(new Error('error message'))).toEqual(expected);
+    expect(tPrintingTypes.transform(new Error('error message'))).toEqual(expected);
+});
+
+describe('handles circular reference', () => {
+    test.each(Object.keys(tDefault))("%s",
+        (transformMethod: string, doneCb) => {
+            const obj: any = {};
+            obj.a = [obj];
+            obj.b = {};
+            obj.b.inner = obj.b;
+            obj.b.obj = obj;
+            expect(() => tDefault[transformMethod](obj)).not.toThrow();
+            if (transformMethod === 'err') {
+                return doneCb(); // 'Error' objects assumed with {stack, message}, never having circular
+            }
+            expect(tDefault[transformMethod](obj)).toEqual(inspect(obj));
+            doneCb();
+        });
+});
+

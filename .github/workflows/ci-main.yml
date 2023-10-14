@@ -8,7 +8,7 @@ on:
 
 jobs:
   build: 
-    uses: ./.github/workflows/nodejs-build.yml
+    uses: ./.github/workflows/step-build.yml
   sonarcloud:
     needs: build
     runs-on: ubuntu-latest

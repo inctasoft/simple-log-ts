@@ -19,17 +19,16 @@ jobs:
         run: cat ./package.json
       - name: Get latest commit message
         id: get-latest-commit-message
-        run: |
-          MSG=$(git log --pretty=format:%B -1 HEAD)
-          echo "::add-mask::$MSG"
-          echo "message=$MSG" >> $GITHUB_OUTPUT
+        run: echo "LAST_COMMIT=$(git log --pretty=format:%B -1 HEAD)" >> $GITHUB_OUTPUT
         # ^ using the new $GITHUB_OUTPUT instead of `echo "::set-output name=message::$MSG"`
       - name: 'Automated Version Bump'
         id: version-bump
         uses: 'phips28/gh-action-bump-version@master'
+        env: 
+          LAST_COMMIT: ${{ steps.get-latest-commit-message.LAST_COMMIT }}
         with: 
           tag-prefix: 'v'
-          commit-message: '[skip ci]:version bump to {{version}}:${{ steps.get-latest-commit-message.outputs.message }}'
+          commit-message: '[skip ci]:version bump to {{version}}:$LAST_COMMIT'
                                               # Using defaults from  https://github.com/phips28/gh-action-bump-version#workflow
                                               # TODO consider commitizen to bump the package version
         #   minor-wording:  'MINOR'

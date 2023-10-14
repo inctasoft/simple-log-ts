@@ -5,40 +5,8 @@ on:
       types: [created]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    name: 'Build and Unit Test'
-    strategy:
-      matrix:
-        node-version: [18.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        ref: ${{ github.event.release.tag_name }}
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run build
-    - run: npm test
-    - uses: sonarsource/sonarcloud-github-action@master
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        args:
-          # Unique keys of your project and organization. You can find them in SonarCloud > Information (bottom-left menu)
-          # mandatory
-          -Dsonar.projectKey=inctasoft_simple-log-ts
-          -Dsonar.organization=inctasoft
-          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-          -Dsonar.typescript.tsconfigPaths=tsconfig.json
-          -Dsonar.sources=src
-          -Dsonar.tests=test
+  build: 
+    uses: ./.github/workflows/step-build.yml
 
   # publishing to github only if pushing to main branch
   publish-gpr:
@@ -49,7 +17,6 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - run: git pull
       - uses: actions/setup-node@v3
         with:
           node-version: 16
@@ -70,7 +37,6 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - run: git pull
       - uses: actions/setup-node@v3
         with:
           node-version: 16

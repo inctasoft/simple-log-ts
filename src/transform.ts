@@ -1,24 +1,24 @@
-import { inspect } from "util";
-import { Symbol } from 'typescript';
+import { InspectOptions, inspect } from "util";
 
 export const _configSymbol = Symbol('_configSymbol');
 
 export type TransformConfig = {
-    printMapSetTypes: boolean
+    printMapSetTypes: boolean,
+    inspectOptions: InspectOptions
 }
 
 export type inddexedClass = {
     [key: string]: Function
-    // [_configSymbol]: TransformConfig
 }
 
 export class Transform  {
 
     [_configSymbol]: TransformConfig;
 
-    constructor(config?: Partial<TransformConfig>) {
+    constructor(config: TransformConfig) {
         this[_configSymbol] = {
-            printMapSetTypes: config?.printMapSetTypes ?? false
+            printMapSetTypes: config.printMapSetTypes,
+            inspectOptions: config.inspectOptions
         }
     }
 
@@ -43,7 +43,7 @@ export class Transform  {
     }
 
     public obj = (obj: Record<string, any>) => {
-        const incpectResult = inspect(obj);
+        const incpectResult = inspect(obj, this[_configSymbol].inspectOptions.showHidden, this[_configSymbol].inspectOptions.depth, this[_configSymbol].inspectOptions.colors);
         if (/\[Circular\s\*\d+\]/.test(incpectResult)) {
             return incpectResult;
         }
@@ -59,7 +59,7 @@ export class Transform  {
     };
 
     public map = (map: Map<any, any>) => {
-        const incpectResult = inspect(map);
+        const incpectResult = inspect(map, this[_configSymbol].inspectOptions.showHidden, this[_configSymbol].inspectOptions.depth, this[_configSymbol].inspectOptions.colors);
         if (/\[Circular\s\*\d+\]/.test(incpectResult)) {
             return incpectResult;
         }
@@ -75,7 +75,7 @@ export class Transform  {
     };
 
     public set = (set: Set<any>) => {
-        const incpectResult = inspect(set);
+        const incpectResult = inspect(set, this[_configSymbol].inspectOptions.showHidden, this[_configSymbol].inspectOptions.depth, this[_configSymbol].inspectOptions.colors);
         if (/\[Circular\s\*\d+\]/.test(incpectResult)) {
             return incpectResult;
         }
@@ -89,7 +89,7 @@ export class Transform  {
     };
 
     public arr = (arr: Array<any>) => {
-        const incpectResult = inspect(arr);
+        const incpectResult = inspect(arr, this[_configSymbol].inspectOptions.showHidden, this[_configSymbol].inspectOptions.depth, this[_configSymbol].inspectOptions.colors);
         if (/\[Circular\s\*\d+\]/.test(incpectResult)) {
             return incpectResult;
         }

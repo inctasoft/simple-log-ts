@@ -3,13 +3,12 @@ import { Transform, inddexedClass } from '../src/transform';
 import { inspect } from 'util';
 import { doesNotMatch } from 'assert';
 
-const tDefault = new Transform() as Transform & inddexedClass;
-const tPrintingTypes = new Transform({ printMapSetTypes: true }) as Transform & inddexedClass;
+const tDefault = new Transform({inspectOptions: {}, printMapSetTypes: false}) as Transform & inddexedClass;
+const tPrintingTypes = new Transform({inspectOptions: {}, printMapSetTypes: true }) as Transform & inddexedClass;
 
 test('unsupported types are transformed by transformObject', () => {
-    const t = new Transform();
-    const transformObjectSpy = jest.spyOn(t, 'obj');
-    t.transform(Buffer.from('some string'));
+    const transformObjectSpy = jest.spyOn(tDefault, 'obj');
+    tDefault.transform(Buffer.from('some string'));
     expect(transformObjectSpy).toBeCalledTimes(1);
 });
 

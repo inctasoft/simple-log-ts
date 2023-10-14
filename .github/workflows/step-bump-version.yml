@@ -24,11 +24,9 @@ jobs:
       - name: 'Automated Version Bump'
         id: version-bump
         uses: 'phips28/gh-action-bump-version@master'
-        env: 
-          LAST_COMMIT: ${{ steps.get-latest-commit-message.LAST_COMMIT }}
         with: 
           tag-prefix: 'v'
-          commit-message: '[skip ci]:version bump to {{version}}:$LAST_COMMIT'
+          commit-message: 'version bump to {{version}}:$LAST_COMMIT[skip ci]'
                                               # Using defaults from  https://github.com/phips28/gh-action-bump-version#workflow
                                               # TODO consider commitizen to bump the package version
         #   minor-wording:  'MINOR'
@@ -39,6 +37,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_GHA_AUTH }}
           GITHUB_USER: akrsmv
+          LAST_COMMIT: ${{ steps.get-latest-commit-message.LAST_COMMIT }}
       - name: 'cat package.json'
         run: cat ./package.json
       - name: 'Output Step'

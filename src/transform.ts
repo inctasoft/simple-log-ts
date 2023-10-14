@@ -1,12 +1,23 @@
+import { inspect } from "util";
+import { Symbol } from 'typescript';
+
+export const _configSymbol = Symbol('_configSymbol');
+
 export type TransformConfig = {
     printMapSetTypes: boolean
 }
 
-export class Transform {
-    private _config: TransformConfig;
+export type inddexedClass = {
+    [key: string]: Function
+    // [_configSymbol]: TransformConfig
+}
+
+export class Transform  {
+
+    [_configSymbol]: TransformConfig;
 
     constructor(config?: Partial<TransformConfig>) {
-        this._config = {
+        this[_configSymbol] = {
             printMapSetTypes: config?.printMapSetTypes ?? false
         }
     }
@@ -32,6 +43,10 @@ export class Transform {
     }
 
     public obj = (obj: Record<string, any>) => {
+        const incpectResult = inspect(obj);
+        if (/\[Circular\s\*\d+\]/.test(incpectResult)) {
+            return incpectResult;
+        }
         const transformed = Object.entries(obj).reduce<Record<string, any>>((accum, [objKey, objValue]) => {
             if (typeof objValue === 'object') {
                 accum[objKey] = this.transform(objValue)
@@ -44,6 +59,10 @@ export class Transform {
     };
 
     public map = (map: Map<any, any>) => {
+        const incpectResult = inspect(map);
+        if (/\[Circular\s\*\d+\]/.test(incpectResult)) {
+            return incpectResult;
+        }
         const transformed = Array.from(map.entries()).reduce<Record<string, any>>((accum, [mapKey, mapValue]) => {
             if (typeof mapValue === 'object') {
                 accum[mapKey] = this.transform(mapValue)
@@ -52,20 +71,28 @@ export class Transform {
             }
             return accum
         }, {});
-        return this._config.printMapSetTypes ? { "[Map]": transformed } : transformed
+        return this[_configSymbol].printMapSetTypes ? { "[Map]": transformed } : transformed
     };
 
     public set = (set: Set<any>) => {
+        const incpectResult = inspect(set);
+        if (/\[Circular\s\*\d+\]/.test(incpectResult)) {
+            return incpectResult;
+        }
         const transformed = Array.from(set).map((setElem: any): Array<any> => {
             if (typeof setElem === 'object') {
                 return this.transform(setElem);
             }
             return setElem;
         });
-        return this._config.printMapSetTypes ? { "[Set]": transformed } : transformed
+        return this[_configSymbol].printMapSetTypes ? { "[Set]": transformed } : transformed
     };
 
     public arr = (arr: Array<any>) => {
+        const incpectResult = inspect(arr);
+        if (/\[Circular\s\*\d+\]/.test(incpectResult)) {
+            return incpectResult;
+        }
         const transformed = Array.from(arr).map((arrElem: any): Array<any> => {
             if (typeof arrElem === 'object') {
                 return this.transform(arrElem);

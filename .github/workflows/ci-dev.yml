@@ -1,0 +1,11 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ "dev", "main", "release/**", "hotfix/**" ]
+  push:
+    branches: [ "dev", "main", "release/**", "hotfix/**" ]
+
+jobs:
+  build: 
+    uses: ./.github/workflows/step-build.yml

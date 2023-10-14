@@ -1,8 +1,10 @@
 import { expect, test } from '@jest/globals';
-import { Transform } from '../src/transform';
+import { Transform, inddexedClass } from '../src/transform';
+import { inspect } from 'util';
+import { doesNotMatch } from 'assert';
 
-const tDefault = new Transform();
-const tPrintingTypes = new Transform({ printMapSetTypes: true });
+const tDefault = new Transform() as Transform & inddexedClass;
+const tPrintingTypes = new Transform({ printMapSetTypes: true }) as Transform & inddexedClass;
 
 test('unsupported types are transformed by transformObject', () => {
     const t = new Transform();
@@ -11,11 +13,6 @@ test('unsupported types are transformed by transformObject', () => {
     expect(transformObjectSpy).toBeCalledTimes(1);
 });
 
-it('Does not handle circular reference', () => {
-    const a: any = { a: 1 }
-    Object.assign(a, { b: a });
-    expect(() => tDefault.transform(a)).toThrow("Maximum call stack size exceeded");
-});
 
 test('transforms Date to ISOString', () => {
     const testDate = new Date();
@@ -24,11 +21,13 @@ test('transforms Date to ISOString', () => {
 });
 
 test('map', () => {
-    expect(tDefault.map(new Map([['a', 1]]))).toEqual({ a: 1 });
-    expect(tPrintingTypes.map(new Map([['a', 1]]))).toEqual({ "[Map]": { a: 1 } });
+    const a = new Map<any, any>([['a', 1]])
+    a.set('b', a);
+    expect(tDefault.map(a)).toEqual(inspect(a));
+    expect(tPrintingTypes.map(a)).toEqual(inspect(a));
 });
 
-test('array', () => {
+test('arr', () => {
     expect(tDefault.arr(['a'])).toEqual(['a']);
     expect(tPrintingTypes.arr(['a', new Map([['b', 2]])])).toEqual(['a', { "[Map]": { b: 2 } }]);
 });
@@ -43,6 +42,7 @@ test('obj', () => {
     expect(tPrintingTypes.obj({ a: 1, b: new Set(['b', 'c']) })).toEqual({ a: 1, b: { "[Set]": ['b', 'c'] } });
 });
 
+
 test('err', () => {
     const testErrorMsg = "error message";
     const expected = { "[Error]": { message: testErrorMsg, stack: expect.stringContaining("Error:") } }
@@ -51,5 +51,22 @@ test('err', () => {
     expect(tPrintingTypes.err(new Error('error message'))).toEqual(expected);
     expect(tDefault.transform(new Error('error message'))).toEqual(expected);
     expect(tPrintingTypes.transform(new Error('error message'))).toEqual(expected);
+});
+
+describe('handles circular reference', () => {
+    test.each(Object.keys(tDefault))("%s",
+        (transformMethod: string, doneCb) => {
+            const obj: any = {};
+            obj.a = [obj];
+            obj.b = {};
+            obj.b.inner = obj.b;
+            obj.b.obj = obj;
+            expect(() => tDefault[transformMethod](obj)).not.toThrow();
+            if (transformMethod === 'err') {
+                return doneCb(); // 'Error' objects assumed with {stack, message}, never having circular
+            }
+            expect(tDefault[transformMethod](obj)).toEqual(inspect(obj));
+            doneCb();
+        });
 });
 

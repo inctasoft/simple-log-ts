@@ -55,6 +55,8 @@ jobs:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
 
+      - run: npm ci
+      - run: npm run build
       - run: npm publish
 
         env:
@@ -74,6 +76,8 @@ jobs:
           node-version: 16
           registry-url: https://registry.npmjs.org/
 
+      - run: npm ci
+      - run: npm run build
       - run: npm publish --access public
 
         env:

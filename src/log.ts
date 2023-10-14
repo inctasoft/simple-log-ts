@@ -1,11 +1,12 @@
-import { formatWithOptions, inspect } from "util";
+import { InspectOptions, formatWithOptions, inspect } from "util";
 import { TransformConfig, Transform } from "./transform";
 
 const logLevels = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRIT'];
 
 export type LogConfig = {
     correlation_id?: string,
-    printCorrelation?: boolean
+    printCorrelation?: boolean,
+    inspectOptions: InspectOptions
 }
 export class Log {
     private _config: LogConfig
@@ -22,18 +23,18 @@ export class Log {
     constructor(config?: Partial<TransformConfig & LogConfig & { [x: string]: unknown }>) {
         this._config = {
             correlation_id: String(config?.correlation_id),
-            printCorrelation: config?.printCorrelation ?? true
+            printCorrelation: config?.printCorrelation ?? true,
+            inspectOptions: config?.inspectOptions ?? { colors: true, depth: 10, showHidden: false }
         }
         this._transformator = new Transform({ printMapSetTypes: config?.printMapSetTypes ?? false });
     }
 
     private logIfLevelInRange(loglevel: string, logFn: Function, data: any, error?: Error) {
         if (this.allowedLogLevels(process.env.LOGLEVEL).includes(loglevel)) {
-            const incpectResult = inspect(data);
             const logData = {
                 timestamp: new Date().toISOString(),
                 level: loglevel,
-                message: /\[Circular\s\*\d+\]/.test(incpectResult) ? incpectResult : this._transformator.transform(data)
+                message: this._transformator.transform(data)
             };
             if (this._config.printCorrelation) {
                 Object.assign(logData, { correlation: this._config.correlation_id })
@@ -41,7 +42,7 @@ export class Log {
             if (error) {
                 Object.assign(logData, this._transformator.err(error));
             }
-            logFn(formatWithOptions({ colors: true, depth: 10, showHidden: false }, '%j', logData));
+            logFn(formatWithOptions(this._config.inspectOptions, '%j', logData));
         }
     }
 }

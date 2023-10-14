@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [ "dev", "main", "release/**", "hotfix/**" ]
+    branches: ["main"]
   push:
-    branches: [ "dev", "main", "release/**", "hotfix/**" ]
+    branches: ["main"]
 
 jobs:
   build: 
@@ -29,24 +29,18 @@ jobs:
           -Dsonar.sources=./src
           -Dsonar.tests=./test
   bump-version:
+    name: if main branch bump version
     if: ${{ github.ref_name == 'main' && github.event_name == 'push'}}
     needs: build
     permissions:
       packages: write
       contents: write
-    name: 'if main branch: Bump Version'
-    uses: ./.github/workflows/bump-version.yml
-  merge-in-dev-after-version-bump:
-    name: 'pull new version in dev'
+    uses: ./.github/workflows/step-bump-version.yml
+  merge-in-dev:
     if: ${{  github.ref_name == 'main' && github.event_name == 'push' }}
+    name: 'pull in dev branch'
     needs: [build,bump-version]
     permissions:
       pull-requests: write
-    uses: ./.github/workflows/merge-in-dev.yml
-  merge-in-dev:
-    name: 'pull ${{github.ref_name}} in dev'
-    if: ${{ github.ref_name != 'dev'  && github.ref_name != 'main' && github.event_name == 'push' }}
-    needs: build
-    permissions:
-      pull-requests: write
-    uses: ./.github/workflows/merge-in-dev.yml
+    uses: ./.github/workflows/step-merge-in-dev.yml
+

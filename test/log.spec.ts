@@ -145,22 +145,21 @@ describe('correlation', () => {
         expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
     });
 });
-describe('handles circular references', () => {
-    it('prints util.inspect', () => {
-        const a: any = { a: 1 }
-        Object.assign(a, { b: a });
-        const log = new Log();
-        expect(() => log.warn(a)).not.toThrow();
+it('handles circular references', () => {
+    const a: any = { a: 1 }
+    Object.assign(a, { b: a });
+    const log = new Log();
+    expect(() => log.warn(a)).not.toThrow();
 
-        const expectedJsonLogged = {
-            ...logMetadataMatcher("WARN"),
-            message: inspect(a)
-        };
+    const expectedJsonLogged = {
+        ...logMetadataMatcher("WARN"),
+        message: inspect(a)
+    };
 
-        const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
-        expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
-    });
+    const actualCallArgumentsValidJson = JSON.parse(String(console_warn.mock.calls[0][0]));
+    expect(actualCallArgumentsValidJson).toEqual(expectedJsonLogged);
 });
+
 describe('Log stetements depending on config', () => {
     describe('(default) when config.printMapSetTypes = false', () => {
         const expectTransformed_testMap = {

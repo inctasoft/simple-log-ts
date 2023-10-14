@@ -1,12 +1,11 @@
-import { InspectOptions, formatWithOptions, inspect } from "util";
+import { format } from "util";
 import { TransformConfig, Transform } from "./transform";
 
 const logLevels = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRIT'];
 
 export type LogConfig = {
     correlation_id?: string,
-    printCorrelation?: boolean,
-    inspectOptions: InspectOptions
+    printCorrelation?: boolean
 }
 export class Log {
     private _config: LogConfig
@@ -23,10 +22,12 @@ export class Log {
     constructor(config?: Partial<TransformConfig & LogConfig & { [x: string]: unknown }>) {
         this._config = {
             correlation_id: String(config?.correlation_id),
-            printCorrelation: config?.printCorrelation ?? true,
-            inspectOptions: config?.inspectOptions ?? { colors: true, depth: 10, showHidden: false }
+            printCorrelation: config?.printCorrelation ?? true
         }
-        this._transformator = new Transform({ printMapSetTypes: config?.printMapSetTypes ?? false });
+        this._transformator = new Transform({
+            inspectOptions: config?.inspectOptions ?? {},
+            printMapSetTypes: config?.printMapSetTypes ?? false
+        });
     }
 
     private logIfLevelInRange(loglevel: string, logFn: Function, data: any, error?: Error) {
@@ -42,7 +43,7 @@ export class Log {
             if (error) {
                 Object.assign(logData, this._transformator.err(error));
             }
-            logFn(formatWithOptions(this._config.inspectOptions, '%j', logData));
+            logFn(format('%j', logData));
         }
     }
 }

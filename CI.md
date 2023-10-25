@@ -1,4 +1,4 @@
-## CI / template
+# CI / template repo
 - Upon creating a repository from the template the Gthub Actions pipeline will fail for the `sonarcloud` step
 - You would want to first
   - One-time execute `npm run prepare` to install git hooks
@@ -19,3 +19,10 @@
 * Once a Github release from tag _is manually created_ 
   * npm package with the new version is pushed to https://registry.npmjs.org/
   * npm package with the new version is pushed to https://npm.pkg.github.com/
+
+* Encouraged is ussage of `commitizen`
+```bash
+npm install -g commitizen
+git cz
+# follow cli instructions
+```

@@ -5,10 +5,10 @@
 npm install @inctasoft/simple-log-ts
 ```
 
-A `Log` class with `debug`, `info`, `warn`, `error` and `crit` methods.
+- `debug`, `info`, `warn`, `error` and `crit` methods.
 - JSON format, useful for log ingesting services
 - `Error`, `Map` `Set` objects are trnsformed into JSON and also printed
-- In case of circular references, output is still JSON, but the message property will contain a string with the value of `util.inspect(data, ...inspectOptions)`. `inspectOptions` by default is `{}` but can be overwritten in Log's constructor
+- In case of circular references, output is still JSON, and the message property will contain a string with the value of `util.inspect(data, ...inspectOptions)`. `inspectOptions` by default is `{}` but can be overwritten in Log's constructor
 - Optional `correlation_id` can be passed to constructor, which is always logged. Pass `printCorrelation: false` in Log's constructor to skip it.
 
 ## Usage
@@ -17,13 +17,13 @@ A `Log` class with `debug`, `info`, `warn`, `error` and `crit` methods.
 import { Log } from "@inctasoft/simple-log-ts";
 
 const log = new Log();
-log.error("oops something hapened, new Error('some err msg'));
+log.error("something hapened, new Error('some err msg'));
 ```
 results in:
 ```json
-{"timestamp":"2023-10-11T21:50:47.405Z","level":"ERROR","message":"oops something hapened","correlation":"undefined","[Error]":{"stack":"Error: some err msg\n    at Object..(the err stack)","message":"some err msg"}}```
+{"timestamp":"2023-10-11T21:50:47.405Z","level":"ERROR","message":"something hapened","correlation":"undefined","[Error]":{"stack":"Error: some err msg\n    at Object..(the err stack)","message":"some err msg"}}```
 ```
-- Log complex objects, and providing `correlation_id`
+- Log complex objects, provide `correlation_id`
 ```typescript
 import { Log } from "@inctasoft/simple-log-ts";
 process.env.LOGLEVEL = 'DEBUG' // un-silence debug method
@@ -89,26 +89,3 @@ results in:
 | `WARN` | `warn`,`error`,`crit`| default, if no `LOGLEVEL` is present |
 | `ERROR`| `error`,`crit`| Both `crit` and `error` use `console.error` and accept optional second `Error` argument |
 | `SILENT` <br/> (or any other value)| `crit` | Lets you silence all logs, if not using `crit` method(as it is always active, no matter of `LOGLEVEL` value) |
-
-## This repo as template
-- Upon creating a repository from the template the Gthub Actions pipeline will fail for the `sonarcloud` step
-- You would want to first
-  - One-time execute `npm run prepare` to install git hooks
-  - remove other files, change contents of `package.json`, etc.
-  - make sure these secrets exists, have access to your repo and are valid:
-    - `PAT_TOKEN_GHA_AUTH` the token of the account to setup git for automatic version bumps and mergebacks in dev. Needs a `repo` scope
-    - `SONAR_TOKEN` - sonar cloud token. You will need a https://sonarcloud.io/ account and a corresponding project
-    - `NPM_TOKEN` - NPM token (classic). You will need a https://www.npmjs.com/ account
-
-* On push to `main`, `release/**` or `hotfix/**`, commits are pulled back in `dev` branch 
-* On push to  `main`:
-  * package version is bumped depending on commit messages
-    * see https://github.com/phips28/gh-action-bump-version#workflow on commit messages
-    * (version bump commit will be automerged in `dev` from _2._)
-  * new tag is being created with the new version
-
-* _pre-commit_ hooks are running tests and linting commit messages. Using `git cz` is encouraged
-* Once a Github release from tag _is manually created_ 
-  * npm package with the new version is pushed to https://registry.npmjs.org/
-  * npm package with the new version is pushed to https://npm.pkg.github.com/
-  

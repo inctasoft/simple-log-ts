@@ -11,8 +11,9 @@ export type inddexedClass = {
     [key: string]: Function
 }
 
-export class Transform  {
-
+export class Transform {
+    // using Symbol makes Transform config prop not iterable
+    // leaving all Transform iterable props being tranform methods
     [_configSymbol]: TransformConfig;
 
     constructor(config: TransformConfig) {

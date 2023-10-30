@@ -1,6 +1,6 @@
 {
   "name": "@inctasoft/simple-log-ts",
-  "version": "4.1.9",
+  "version": "4.1.10",
   "description": "JSON log of objects, including Maps and Sets. Optional correlation_id",
   "main": "dist/src/log.js",
   "files": [

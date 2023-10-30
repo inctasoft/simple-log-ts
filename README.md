@@ -9,7 +9,7 @@ npm install @inctasoft/simple-log-ts
 - JSON format, useful for log ingesting services
 - `Error`, `Map` `Set` objects are trnsformed into JSON and also printed
 - In case of circular references, output is still JSON, and the message property will contain a string with the value of `util.inspect(data, ...inspectOptions)`. `inspectOptions` by default is `{}` but can be overwritten in Log's constructor
-- Optional `correlation_id` can be passed to constructor, which is always logged. Pass `printCorrelation: false` in Log's constructor to skip it.
+- Optional `correlation_id` can be passed to constructor. Useful for correlating logs from different services. Pass `printCorrelation: false` in Log's constructor to skip it.
 
 ## Usage
 - Empty config

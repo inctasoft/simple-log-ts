@@ -13,10 +13,13 @@
     "commitlint": "commitlint -e"
   },
   "keywords": [
+    "JSON",
     "log",
     "logging",
     "typescript",
-    "correlation"
+    "correlation",
+    "map",
+    "set"
   ],
   "author": "akrsmv",
   "license": "MIT",

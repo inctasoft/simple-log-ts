@@ -57,7 +57,7 @@ export class Transform {
                 }
                 return accum
             }, {})
-            : {};
+            : `${obj}`;
         return transformed
     };
 

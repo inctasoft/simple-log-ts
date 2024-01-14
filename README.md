@@ -6,7 +6,6 @@ npm install @inctasoft/simple-log-ts
 ```
 
 - `debug`, `info`, `warn`, `error` and `crit` methods.
-- Changing `LOGLEVEL` environment variable automatically affects a process log level
 - JSON format, useful for log ingesting services
 - `Error`, `Map` `Set` objects are trnsformed into JSON and also printed
 - In case of circular references, output is still JSON, and the message property will contain a string with the value of `util.inspect(data, ...inspectOptions)`. `inspectOptions` by default is `{}` but can be overwritten in Log's constructor

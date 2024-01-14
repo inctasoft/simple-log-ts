@@ -22,7 +22,11 @@
 
 * Encouraged is ussage of `commitizen`
 ```bash
+git add ...
 npm install -g commitizen
 git cz
-# follow cli instructions
+# follow commitizen cli instructions
+git push
 ```
+
+* Once a branch was merged into main, and a new tag is created, you can manually from github or via github cli create a new release. And it will get published to `npm` and `github` registries

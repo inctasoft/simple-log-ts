@@ -25,7 +25,7 @@ export class Transform {
 
     public transform = (value: any) => {
         let transformed = value;
-        if (typeof value === 'object') {
+        if (value && typeof value === 'object') {
             if (value instanceof Error) {
                 transformed = this.err(value);
             } else if (Array.isArray(value)) {
@@ -48,9 +48,9 @@ export class Transform {
         if (/\[Circular\s\*\d+\]/.test(incpectResult)) {
             return incpectResult;
         }
-        const transformed = typeof obj === 'object' ?
+        const transformed = obj && typeof obj === 'object' ?
             Object.entries(obj).reduce<Record<string, any>>((accum, [objKey, objValue]) => {
-                if (typeof objValue === 'object') {
+                if (objValue && typeof objValue === 'object') {
                     accum[objKey] = this.transform(objValue)
                 } else {
                     accum[objKey] = objValue
@@ -67,7 +67,7 @@ export class Transform {
             return incpectResult;
         }
         const transformed = Array.from(map.entries()).reduce<Record<string, any>>((accum, [mapKey, mapValue]) => {
-            if (typeof mapValue === 'object') {
+            if (mapValue && typeof mapValue === 'object') {
                 accum[mapKey] = this.transform(mapValue)
             } else {
                 accum[mapKey] = mapValue
@@ -83,7 +83,7 @@ export class Transform {
             return incpectResult;
         }
         const transformed = Array.from(set).map((setElem: any): Array<any> => {
-            if (typeof setElem === 'object') {
+            if (setElem && typeof setElem === 'object') {
                 return this.transform(setElem);
             }
             return setElem;
@@ -97,7 +97,7 @@ export class Transform {
             return incpectResult;
         }
         const transformed = Array.from(arr).map((arrElem: any): Array<any> => {
-            if (typeof arrElem === 'object') {
+            if (arrElem && typeof arrElem === 'object') {
                 return this.transform(arrElem);
             }
             return arrElem;

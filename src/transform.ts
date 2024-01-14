@@ -48,14 +48,16 @@ export class Transform {
         if (/\[Circular\s\*\d+\]/.test(incpectResult)) {
             return incpectResult;
         }
-        const transformed = Object.entries(obj).reduce<Record<string, any>>((accum, [objKey, objValue]) => {
-            if (typeof objValue === 'object') {
-                accum[objKey] = this.transform(objValue)
-            } else {
-                accum[objKey] = objValue
-            }
-            return accum
-        }, {});
+        let transformed = typeof obj === 'object' ?
+            Object.entries(obj).reduce<Record<string, any>>((accum, [objKey, objValue]) => {
+                if (typeof objValue === 'object') {
+                    accum[objKey] = this.transform(objValue)
+                } else {
+                    accum[objKey] = objValue
+                }
+                return accum
+            }, {})
+            : {};
         return transformed
     };
 

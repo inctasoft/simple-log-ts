@@ -17,8 +17,6 @@ export class Log {
     public error = (data: any, error?: Error) => this.logIfLevelInRange('ERROR', console.error, data, error);
     public crit = (data: any, error?: Error) => this.logIfLevelInRange('CRIT', console.error, data, error);
 
-    private allowedLogLevels = (logLevel: string | undefined) => logLevels.slice(logLevels.indexOf(logLevel ?? 'WARN'))
-
     constructor(config?: Partial<TransformConfig & LogConfig & { [x: string]: unknown }>) {
         this._config = {
             correlation_id: String(config?.correlation_id),
@@ -31,7 +29,7 @@ export class Log {
     }
 
     private logIfLevelInRange(loglevel: string, logFn: Function, data: any, error?: Error) {
-        if (this.allowedLogLevels(process.env.LOGLEVEL).includes(loglevel)) {
+        if (checkLOGLEVEL(loglevel)) {
             const logData = {
                 timestamp: new Date().toISOString(),
                 level: loglevel,
@@ -47,3 +45,5 @@ export class Log {
         }
     }
 }
+const allowedLogLevels = (logLevel: string | undefined) => logLevels.slice(logLevels.indexOf(logLevel ?? 'WARN'))
+const checkLOGLEVEL = (loglevel: string) => allowedLogLevels(process.env.LOGLEVEL).includes(loglevel)

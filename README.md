@@ -18,7 +18,7 @@ npm install @inctasoft/simple-log-ts
 import { Log } from "@inctasoft/simple-log-ts";
 
 const log = new Log();
-log.error("something hapened, new Error('some err msg'));
+log.error("something hapened", new Error('some err msg'));
 ```
 results in:
 ```json
@@ -27,7 +27,7 @@ results in:
 - Log complex objects, provide `correlation_id`
 ```typescript
 import { Log } from "@inctasoft/simple-log-ts";
-process.env.LOGLEVEL = 'DEBUG' // un-silence debug method
+process.env.LOGLEVEL = 'DEBUG' // default level is WARN, un-silence debug method
 const log = new Log({ correlation_id: 'some_guid' });
 log.debug({
     a: 1, b: 'xyz', my_set: new Set(['foo', 'bar']), nested: {

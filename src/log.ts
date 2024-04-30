@@ -20,7 +20,7 @@ export class Log {
     constructor(config?: Partial<TransformConfig & LogConfig & { [x: string]: unknown }>) {
         this._config = {
             correlation_id: String(config?.correlation_id),
-            printCorrelation: config?.printCorrelation ?? true
+            printCorrelation: config?.printCorrelation ?? true,
         }
         this._transformator = new Transform({
             inspectOptions: config?.inspectOptions ?? {},

@@ -39,6 +39,9 @@ export class Transform {
             } else {
                 transformed = this.obj(value);
             }
+        } 
+        if (value && typeof value === 'bigint') {
+            transformed = { type: 'bigint', value: value.toString() }
         }
         return transformed;
     }
@@ -48,7 +51,7 @@ export class Transform {
         if (/\[Circular\s\*\d+\]/.test(incpectResult)) {
             return incpectResult;
         }
-        const transformed = obj && typeof obj === 'object' ?
+        const transformed = obj && //typeof obj === 'object' ?
             Object.entries(obj).reduce<Record<string, any>>((accum, [objKey, objValue]) => {
                 if (objValue && typeof objValue === 'object') {
                     accum[objKey] = this.transform(objValue)
@@ -57,7 +60,7 @@ export class Transform {
                 }
                 return accum
             }, {})
-            : `${obj}`;
+            // : `${obj}`;
         return transformed
     };
 

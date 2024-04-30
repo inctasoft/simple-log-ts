@@ -52,6 +52,11 @@ test('err', () => {
     expect(tPrintingTypes.transform(new Error('error message'))).toEqual(expected);
 });
 
+test('bigint', () => {
+    const a = 1000000000000000000000n
+    expect(tDefault.transform(a)).toEqual({type: 'bigint', value: '1000000000000000000000'});
+});
+
 describe('handles circular reference', () => {
     test.each(Object.keys(tDefault))("%s",
         (transformMethod: string, doneCb) => {

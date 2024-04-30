@@ -39,7 +39,7 @@ export class Transform {
             } else {
                 transformed = this.obj(value);
             }
-        } 
+        }
         if (value && typeof value === 'bigint') {
             transformed = { type: 'bigint', value: value.toString() }
         }
@@ -55,12 +55,14 @@ export class Transform {
             Object.entries(obj).reduce<Record<string, any>>((accum, [objKey, objValue]) => {
                 if (objValue && typeof objValue === 'object') {
                     accum[objKey] = this.transform(objValue)
+                } else if (objValue && typeof objValue === 'bigint') {
+                    accum[objKey] = { type: 'bigint', value: objValue.toString() }
                 } else {
                     accum[objKey] = objValue
                 }
                 return accum
             }, {})
-            // : `${obj}`;
+        // : `${obj}`;
         return transformed
     };
 
@@ -72,6 +74,8 @@ export class Transform {
         const transformed = Array.from(map.entries()).reduce<Record<string, any>>((accum, [mapKey, mapValue]) => {
             if (mapValue && typeof mapValue === 'object') {
                 accum[mapKey] = this.transform(mapValue)
+            } else if (mapValue && typeof mapValue === 'bigint') {
+                accum[mapKey] = { type: 'bigint', value: mapValue.toString() }
             } else {
                 accum[mapKey] = mapValue
             }
@@ -88,7 +92,9 @@ export class Transform {
         const transformed = Array.from(set).map((setElem: any): Array<any> => {
             if (setElem && typeof setElem === 'object') {
                 return this.transform(setElem);
-            }
+            } else if (setElem && typeof setElem === 'bigint') {
+                return { type: 'bigint', value: setElem.toString() } as any
+            } 
             return setElem;
         });
         return this[_configSymbol].printMapSetTypes ? { "[Set]": transformed } : transformed

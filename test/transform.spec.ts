@@ -3,8 +3,8 @@ import { Transform, inddexedClass } from '../src/transform';
 import { inspect } from 'util';
 import { doesNotMatch } from 'assert';
 
-const tDefault = new Transform({inspectOptions: {}, printMapSetTypes: false}) as Transform & inddexedClass;
-const tPrintingTypes = new Transform({inspectOptions: {}, printMapSetTypes: true }) as Transform & inddexedClass;
+const tDefault = new Transform({ inspectOptions: {}, printMapSetTypes: false }) as Transform & inddexedClass;
+const tPrintingTypes = new Transform({ inspectOptions: {}, printMapSetTypes: true }) as Transform & inddexedClass;
 
 test('unsupported types are transformed by transformObject', () => {
     const transformObjectSpy = jest.spyOn(tDefault, 'obj');
@@ -54,8 +54,14 @@ test('err', () => {
 
 test('bigint', () => {
     const a = 1000000000000000000000n
-    expect(tDefault.transform(a)).toEqual({type: 'bigint', value: '1000000000000000000000'});
+    expect(tDefault.transform(a)).toEqual({ type: 'bigint', value: '1000000000000000000000' });
+    expect(tDefault.transform({ a })).toEqual({ a: { type: 'bigint', value: '1000000000000000000000' } });
+    expect(tDefault.transform(new Map([['a', a]]))).toEqual({ a: { type: 'bigint', value: '1000000000000000000000' } });
+    expect(tDefault.transform(new Set([a]))).toEqual([{ type: 'bigint', value: '1000000000000000000000' }]);
+    // TODO refactor added bigint serialization to cover this case also 
+    //expect(tDefault.transform(new Set(new Map([['a', a]])))).toEqual([{ a: { type: 'bigint', value: '1000000000000000000000' } }]);
 });
+
 
 describe('handles circular reference', () => {
     test.each(Object.keys(tDefault))("%s",

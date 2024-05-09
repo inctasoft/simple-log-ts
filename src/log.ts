@@ -1,6 +1,9 @@
 import { format } from "util";
 import { TransformConfig, Transform } from "./transform";
 
+// let clients also be able to utilize them 
+export { TransformConfig, Transform };
+
 const logLevels = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRIT'];
 
 export type LogConfig = {

@@ -1,10 +1,38 @@
 import { expect, test } from '@jest/globals';
 import { Transform, inddexedClass } from '../src/transform';
 import { inspect } from 'util';
-import { doesNotMatch } from 'assert';
 
 const tDefault = new Transform({ inspectOptions: {}, printMapSetTypes: false }) as Transform & inddexedClass;
 const tPrintingTypes = new Transform({ inspectOptions: {}, printMapSetTypes: true }) as Transform & inddexedClass;
+
+describe('utilizing Transform class from library clients', () => {
+    test('printMapSetTypes: false', () => {
+        const jsonTransform = new Transform({ inspectOptions: {}, printMapSetTypes: false });
+        const transformed = jsonTransform.transform({
+            aMap: new Map([['a', 1], ['b', 2]]),
+            aSet: new Set(['a', 'b']),
+            anError: new Error("this is an error object")
+        });
+        expect(transformed).toEqual({
+            aMap: { a: 1, b: 2 },
+            aSet: ['a', 'b'],
+            anError: { "[Error]": { message: "this is an error object", stack: expect.stringContaining("Error:") } }
+        })
+    });
+    test('printMapSetTypes: true', () => {
+        const jsonTransform = new Transform({ inspectOptions: {}, printMapSetTypes: true });
+        const transformed = jsonTransform.transform({
+            aMap: new Map([['a', 1], ['b', 2]]),
+            aSet: new Set(['a', 'b']),
+            anError: new Error("this is an error object")
+        });
+        expect(transformed).toEqual({
+            aMap: { "[Map]": { a: 1, b: 2 } },
+            aSet: { "[Set]": ['a', 'b'] },
+            anError: { "[Error]": { message: "this is an error object", stack: expect.stringContaining("Error:") } }
+        })
+    });
+});
 
 test('unsupported types are transformed by transformObject', () => {
     const transformObjectSpy = jest.spyOn(tDefault, 'obj');
